@@ -1,0 +1,22 @@
+{
+  "name": "FragArena Esports Arena",
+  "short_name": "FragArena",
+  "description": "Professional Free Fire Esports Tournament Arena Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192x192.jpg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512x512.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512"
+    }
+  ]
+}

@@ -3,9 +3,17 @@ module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        bgPrimary: "var(--bg-primary)",
+        bgSurface: "var(--bg-surface)",
+        textPrimary: "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        borderColor: "var(--border-color)",
+        accentRed: "var(--accent-red)",
+        accentGold: "var(--accent-gold)",
         darkBg: "#0a0a0b",
         cardBg: "#121214",
         neonRed: "#ff003c",

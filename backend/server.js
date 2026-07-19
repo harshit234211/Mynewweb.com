@@ -42,6 +42,10 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json());
 
+// Serve static uploads directory
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 // Database connection
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/fragarena';
 mongoose.connect(mongoUri)

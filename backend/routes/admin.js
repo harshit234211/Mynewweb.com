@@ -7,6 +7,18 @@ const Tournament = require('../models/Tournament');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const { sendTelegramAlert } = require('../utils/telegram');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 const webpush = require('web-push');
 
 // Initialize Web Push
@@ -219,6 +231,34 @@ router.post('/withdrawals/:id/resolve', auth, verifyAdmin, async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
+    }
+});
+
+// @route   PUT api/admin/tournaments/:matchId/players/:playerId/slot
+// @desc    Edit the slot of a joined player
+// @access  Private (Admin only)
+router.put('/tournaments/:matchId/players/:playerId/slot', auth, verifyAdmin, async (req, res) => {
+    try {
+        const { matchId, playerId } = req.params;
+        const { teamNo, position } = req.body;
+
+        const tournament = await Tournament.findById(matchId);
+        if (!tournament) return res.status(404).json({ msg: 'Tournament not found' });
+
+        const playerIndex = tournament.joinedPlayers.findIndex(p => p.user.toString() === playerId);
+        if (playerIndex === -1) return res.status(404).json({ msg: 'Player not found in this match' });
+
+        const isOccupied = tournament.joinedPlayers.find(p => p.teamNo === Number(teamNo) && p.position === position && p.user.toString() !== playerId);
+        if (isOccupied) return res.status(400).json({ msg: 'This slot is already occupied by another player' });
+
+        tournament.joinedPlayers[playerIndex].teamNo = Number(teamNo);
+        if (position) tournament.joinedPlayers[playerIndex].position = position;
+
+        await tournament.save();
+        res.json({ msg: 'Slot updated successfully', joinedPlayers: tournament.joinedPlayers });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
 });
 
@@ -576,6 +616,68 @@ router.post('/settings/announcement', auth, async (req, res) => {
         }
         await config.save();
         res.json({ success: true, message });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   POST api/admin/upload-image
+// @desc    Upload an image (banner) and get URL
+// @access  Private (Admin & Finance Admin)
+router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.user.id);
+        if (!adminUser || (adminUser.role !== 'admin' && adminUser.role !== 'finance_admin')) {
+            return res.status(403).json({ msg: 'Access denied' });
+        }
+        if (!req.file) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+        const imageUrl = `/uploads/${req.file.filename}`;
+        res.json({ success: true, url: imageUrl });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   GET api/admin/settings/promo-banners
+// @desc    Get dynamic promo banners
+// @access  Public
+router.get('/settings/promo-banners', async (req, res) => {
+    try {
+        const config = await Settings.findOne({ key: 'promoBanners' });
+        res.json(config ? config.value : []);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   POST api/admin/settings/promo-banners
+// @desc    Update dynamic promo banners
+// @access  Private (Admin & Finance Admin)
+router.post('/settings/promo-banners', auth, async (req, res) => {
+    try {
+        const adminUser = await User.findById(req.user.id);
+        if (!adminUser || (adminUser.role !== 'admin' && adminUser.role !== 'finance_admin')) {
+            return res.status(403).json({ msg: 'Access denied' });
+        }
+
+        const { banners } = req.body; // Expecting array of { id, image, link }
+        if (!Array.isArray(banners)) {
+            return res.status(400).json({ msg: 'Invalid banners payload' });
+        }
+
+        let config = await Settings.findOne({ key: 'promoBanners' });
+        if (config) {
+            config.value = banners;
+        } else {
+            config = new Settings({ key: 'promoBanners', value: banners });
+        }
+        await config.save();
+        res.json({ success: true, banners: config.value });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

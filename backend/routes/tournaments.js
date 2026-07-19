@@ -119,6 +119,12 @@ router.post('/:id/join', auth, async (req, res) => {
             return res.status(404).json({ msg: 'User profile not found' });
         }
 
+        if (user.role === 'host' || user.role === 'admin' || user.role === 'finance_admin') {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(403).json({ msg: 'Staff members (Hosts/Admins) cannot join matches.' });
+        }
+
         if (!user.ffUid || !user.ffName) {
             await session.abortTransaction();
             session.endSession();

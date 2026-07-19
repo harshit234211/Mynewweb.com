@@ -9,8 +9,9 @@ import {
   Trophy, Home as HomeIcon, Menu, Bell, ChevronLeft,
   Clock, User, LogOut, Plus,
   CheckCircle, XCircle, RefreshCw,
-  TrendingUp, Gift
+  TrendingUp, Gift, Sun, Moon
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -71,8 +72,8 @@ const CountdownTimer = ({ match }) => {
   }
   
   return (
-    <div className="mt-3 mb-2 bg-gray-50 border border-gray-100 rounded-lg p-2 text-center shadow-inner">
-      <p className="text-[10px] text-gray-400 font-bold uppercase mb-1 tracking-wider">Starts In</p>
+    <div className="mt-3 mb-2 bg-bgPrimary border border-borderColor rounded-lg p-2 text-center shadow-inner">
+      <p className="text-[10px] text-textSecondary font-bold uppercase mb-1 tracking-wider">Starts In</p>
       <p className="text-sm font-black text-[#132040] tabular-nums tracking-wide">{timeLeft}</p>
     </div>
   );
@@ -147,6 +148,10 @@ const getIsUpcoming = (match) => {
 };
 
 export default function Home() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Auth
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -173,6 +178,10 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [categoryBanners, setCategoryBanners] = useState<any>({});
   const [globalAnnouncement, setGlobalAnnouncement] = useState('');
+  const [promoBanners, setPromoBanners] = useState<any[]>([]);
+  const [editingSlotFor, setEditingSlotFor] = useState<string | null>(null);
+  const [newSlot, setNewSlot] = useState('');
+  const [newPosition, setNewPosition] = useState('');
 
   // Match detail state
   const [timeLeft, setTimeLeft] = useState('');
@@ -209,7 +218,8 @@ export default function Home() {
   const [ffUid, setFfUid] = useState('');
 
   // Notifications
-  const [notifications] = useState<string[]>(['Welcome to FragArena!', 'New tournament added']);
+  const [notifications, setNotifications] = useState<any[]>([{ id: 1, text: 'Welcome to FragArena!' }]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const timerRef = useRef<any>(null);
   // Ref to track current nav state for popstate handler without stale closures
@@ -304,9 +314,19 @@ export default function Home() {
         .finally(() => setLoading(false));
     } else { setLoading(false); }
 
+    fetch(`${API_URL}/admin/settings/promo-banners`)
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d)) setPromoBanners(d); })
+      .catch(e => console.error(e));
+
     fetch(`${API_URL}/admin/settings/announcement`)
       .then(r => r.json())
-      .then(d => { if (d && d.message) setGlobalAnnouncement(d.message); })
+      .then(d => { 
+        if (d && d.message) {
+          setGlobalAnnouncement(d.message);
+          setNotifications([{ id: Date.now(), text: d.message }, { id: 1, text: 'Welcome to FragArena!' }]);
+        }
+      })
       .catch(e => console.error(e));
 
     loadTournaments();
@@ -582,20 +602,20 @@ export default function Home() {
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-[#f5c518] to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl">
-              <Trophy className="w-10 h-10 text-white" />
+              <Trophy className="w-10 h-10 text-textPrimary" />
             </div>
-            <h1 className="text-3xl font-black text-white tracking-widest">FRAGARENA</h1>
+            <h1 className="text-3xl font-black text-textPrimary tracking-widest">FRAGARENA</h1>
             <p className="text-[#f5c518] text-sm font-semibold tracking-wider mt-1">KHILADIBATTLE</p>
           </div>
 
-          <div className="bg-[#132040] rounded-2xl p-6 shadow-2xl border border-[#1e3a6e]">
+          <div className="bg-bgSurface rounded-2xl p-6 shadow-2xl border border-[#1e3a6e]">
             <div className="flex rounded-xl overflow-hidden mb-6 bg-[#0a1628]">
               <button onClick={() => setIsRegister(false)}
-                className={`flex-1 py-2.5 text-sm font-bold ${!isRegister ? 'bg-[#f5c518] text-black' : 'text-slate-400'}`}>
+                className={`flex-1 py-2.5 text-sm font-bold ${!isRegister ? 'bg-[#f5c518] text-black' : 'text-textSecondary'}`}>
                 LOGIN
               </button>
               <button onClick={() => setIsRegister(true)}
-                className={`flex-1 py-2.5 text-sm font-bold ${isRegister ? 'bg-[#f5c518] text-black' : 'text-slate-400'}`}>
+                className={`flex-1 py-2.5 text-sm font-bold ${isRegister ? 'bg-[#f5c518] text-black' : 'text-textSecondary'}`}>
                 REGISTER
               </button>
             </div>
@@ -604,18 +624,18 @@ export default function Home() {
               {isRegister && (
                 <input type="text" placeholder="Username" value={usernameInput}
                   onChange={e => setUsernameInput(e.target.value)}
-                  className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" required />
+                  className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-textPrimary placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" required />
               )}
               <input type="tel" placeholder="Phone Number" value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
-                className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" required />
+                className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-textPrimary placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" required />
               <input type="password" placeholder="Password" value={passwordInput}
                 onChange={e => setPasswordInput(e.target.value)}
-                className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" required />
+                className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-textPrimary placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" required />
               {isRegister && (
                 <input type="text" placeholder="Referral Code (Optional)" value={referCodeInput}
                   onChange={e => setReferCodeInput(e.target.value)}
-                  className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" />
+                  className="w-full bg-[#0a1628] border border-[#1e3a6e] rounded-xl px-4 py-3 text-textPrimary placeholder-slate-500 focus:outline-none focus:border-[#f5c518]" />
               )}
               {authError && <p className="text-red-400 text-sm text-center">{authError}</p>}
               <button type="submit"
@@ -644,13 +664,13 @@ export default function Home() {
     } catch (e) {}
 
     return (
-      <div className="min-h-screen bg-white pb-24">
+      <div className="min-h-screen bg-bgSurface pb-24">
         {/* Header */}
         <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-          <button onClick={() => setSelectedMatch(null)} className="text-white">
+          <button onClick={() => setSelectedMatch(null)} className="text-textPrimary">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h2 className="text-white font-bold text-base flex-1 text-center">
+          <h2 className="text-textPrimary font-bold text-base flex-1 text-center">
             Contest Details #{selectedMatch.matchId}
           </h2>
           <div className="w-6" />
@@ -674,20 +694,20 @@ export default function Home() {
           <div className="text-center">
             <h3 className="text-[#26a4d3] font-bold text-lg mb-3">Room Details</h3>
             <div className="space-y-3">
-              <div className="flex items-center border-2 border-gray-600 rounded-xl overflow-hidden bg-white">
+              <div className="flex items-center border-2 border-gray-600 rounded-xl overflow-hidden bg-bgSurface">
                 <div className="px-4 py-2 font-black text-xs border-r-2 border-gray-600 w-24 text-left">ID:</div>
-                <div className="flex-1 px-3 py-2 text-sm text-gray-700 font-medium text-left bg-gray-50 flex justify-between items-center">
+                <div className="flex-1 px-3 py-2 text-sm text-gray-700 font-medium text-left bg-bgPrimary flex justify-between items-center">
                   <span>{isRoomReleased && selectedMatch.roomId ? selectedMatch.roomId : 'Coming Soon'}</span>
                   {isRoomReleased && selectedMatch.roomId && (
                     <button onClick={() => navigator.clipboard.writeText(selectedMatch.roomId)}>
-                      <RefreshCw className="w-4 h-4 text-gray-500" />
+                      <RefreshCw className="w-4 h-4 text-textSecondary" />
                     </button>
                   )}
                 </div>
               </div>
-              <div className="flex items-center border-2 border-gray-600 rounded-xl overflow-hidden bg-white">
+              <div className="flex items-center border-2 border-gray-600 rounded-xl overflow-hidden bg-bgSurface">
                 <div className="px-4 py-2 font-black text-xs border-r-2 border-gray-600 w-24 text-left">PASSWORD:</div>
-                <div className="flex-1 px-3 py-2 text-sm text-gray-700 font-medium text-left bg-gray-50 flex justify-between items-center">
+                <div className="flex-1 px-3 py-2 text-sm text-gray-700 font-medium text-left bg-bgPrimary flex justify-between items-center">
                   <span>{isRoomReleased && selectedMatch.roomPass ? selectedMatch.roomPass : 'Coming Soon'}</span>
                 </div>
               </div>
@@ -695,7 +715,7 @@ export default function Home() {
           </div>
 
           {/* Time Left */}
-          <div className="border border-gray-200 rounded-lg px-4 py-2 text-center bg-white shadow-sm mt-5">
+          <div className="border border-borderColor rounded-lg px-4 py-2 text-center bg-bgSurface shadow-sm mt-5">
             <p className="text-gray-600 text-sm font-medium">Time Left: <span className="text-black font-bold">{timeLeft}</span></p>
           </div>
 
@@ -706,27 +726,27 @@ export default function Home() {
 
           {/* Tags Grids */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-white shadow-sm">
+            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-bgSurface shadow-sm">
               <p className="text-xs text-gray-600">Team: <span className="font-bold">{selectedMatch.teamType}</span></p>
             </div>
-            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-white shadow-sm">
+            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-bgSurface shadow-sm">
               <p className="text-xs text-gray-600">Mode: <span className="font-bold">{selectedMatch.mode}</span></p>
             </div>
-            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-white shadow-sm">
+            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-bgSurface shadow-sm">
               <p className="text-xs text-gray-600">Map: <span className="font-bold">{selectedMatch.map}</span></p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-white shadow-sm">
+            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-bgSurface shadow-sm">
               <p className="text-xs text-gray-600">Match Type: <span className="font-bold">{selectedMatch.matchType}</span></p>
             </div>
-            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-white shadow-sm">
+            <div className="border border-gray-300 rounded px-2 py-2 text-center bg-bgSurface shadow-sm">
               <p className="text-xs text-gray-600">Entry Fee: <span className="font-bold text-[#f5c518]">🪙 {selectedMatch.entryFee}</span></p>
             </div>
           </div>
 
-          <div className="border border-gray-300 rounded px-4 py-2 text-center bg-white shadow-sm">
+          <div className="border border-gray-300 rounded px-4 py-2 text-center bg-bgSurface shadow-sm">
             <p className="text-xs text-gray-600">Match Schedule: <span className="font-bold">{selectedMatch.date} at {selectedMatch.time}</span></p>
           </div>
 
@@ -734,7 +754,7 @@ export default function Home() {
           {selectedMatch.prizeDistribution?.length > 0 && (
             <div className="mt-4">
               <p className="text-[#26a4d3] font-bold text-sm mb-2">Prize Details</p>
-              <div className="border border-gray-300 bg-white p-4 space-y-2 shadow-sm">
+              <div className="border border-gray-300 bg-bgSurface p-4 space-y-2 shadow-sm">
                 {selectedMatch.prizeDistribution.map((pd: any, i: number) => (
                   <p key={i} className="text-sm font-bold text-gray-700">
                     {['Top 1', 'Top 2', 'Top 3', 'Top 4', 'Top 5', 'Top 6', 'Top 7', 'Top 8', 'Top 9', 'Top 10'][i] || `Top ${i + 1}`} :- {pd.prize}
@@ -753,7 +773,7 @@ export default function Home() {
                 <div className="border-t border-gray-400 mb-4" />
                 <ul className="space-y-4">
                   {selectedMatch.rules.map((rule: string, i: number) => (
-                    <li key={i} className="flex gap-3 text-sm text-gray-800 font-semibold items-start">
+                    <li key={i} className="flex gap-3 text-sm text-textPrimary font-semibold items-start">
                       <span className="text-black font-black mt-1 text-[10px]">●</span>
                       <span>{rule}</span>
                     </li>
@@ -765,10 +785,10 @@ export default function Home() {
 
           {/* Match Results (if completed) */}
           {selectedMatch.status === 'completed' && (
-            <div className="bg-[#132040] rounded-2xl p-5 text-center shadow-lg border border-green-500/20 space-y-4 text-white">
+            <div className="bg-bgSurface rounded-2xl p-5 text-center shadow-lg border border-green-500/20 space-y-4 text-textPrimary">
               <div className="border-b border-gray-700/50 pb-2">
                 <p className="text-[#f5c518] text-xs font-bold uppercase tracking-widest">🏆 MATCH RESULT</p>
-                <span className="bg-green-500 text-white font-bold text-[9px] px-2 py-0.5 rounded">COMPLETED</span>
+                <span className="bg-green-500 text-textPrimary font-bold text-[9px] px-2 py-0.5 rounded">COMPLETED</span>
               </div>
 
               {(() => {
@@ -776,37 +796,37 @@ export default function Home() {
                 if (myResult) {
                   const wonPrize = myResult.prize || 0;
                   return (
-                    <div className="bg-[#0a1628] p-4 rounded-xl space-y-2 border border-gray-800">
-                      <p className="text-gray-400 text-xs font-medium">Your Performance</p>
+                    <div className="bg-[#0a1628] p-4 rounded-xl space-y-2 border border-borderColor">
+                      <p className="text-textSecondary text-xs font-medium">Your Performance</p>
                       <div className="grid grid-cols-2 gap-4 text-center">
                         <div>
-                          <p className="text-gray-500 text-[10px] uppercase">Rank</p>
-                          <p className="text-white font-black text-xl">#{myResult.rank || '--'}</p>
+                          <p className="text-textSecondary text-[10px] uppercase">Rank</p>
+                          <p className="text-textPrimary font-black text-xl">#{myResult.rank || '--'}</p>
                         </div>
                         <div>
-                          <p className="text-gray-500 text-[10px] uppercase">Kills</p>
+                          <p className="text-textSecondary text-[10px] uppercase">Kills</p>
                           <p className="text-[#f5c518] font-black text-xl">💀 {myResult.kills || 0}</p>
                         </div>
                       </div>
-                      <div className="border-t border-gray-800 pt-2 mt-2">
-                        <p className="text-gray-400 text-xs uppercase">Prize Won</p>
-                        <p className={`font-black text-lg ${wonPrize > 0 ? 'text-green-400' : 'text-gray-500'}`}>
+                      <div className="border-t border-borderColor pt-2 mt-2">
+                        <p className="text-textSecondary text-xs uppercase">Prize Won</p>
+                        <p className={`font-black text-lg ${wonPrize > 0 ? 'text-green-400' : 'text-textSecondary'}`}>
                           {wonPrize > 0 ? `🪙 ${wonPrize} (Credited)` : '₹0'}
                         </p>
                       </div>
                     </div>
                   );
                 } else {
-                  return <p className="text-xs text-gray-400">You did not participate in this match.</p>;
+                  return <p className="text-xs text-textSecondary">You did not participate in this match.</p>;
                 }
               })()}
 
               {/* Leaderboard / Standings */}
               <div className="space-y-2 text-left">
                 <p className="text-[#f5c518] text-xs font-bold uppercase">Standings</p>
-                <div className="bg-[#0a1628] rounded-xl overflow-hidden border border-gray-800">
+                <div className="bg-[#0a1628] rounded-xl overflow-hidden border border-borderColor">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-[#132040] text-gray-400">
+                    <thead className="bg-bgSurface text-textSecondary">
                       <tr>
                         <th className="px-3 py-2 text-left">Rank</th>
                         <th className="px-3 py-2">Player</th>
@@ -819,7 +839,7 @@ export default function Home() {
                         ?.sort((a: any, b: any) => (a.rank || 999) - (b.rank || 999))
                         .slice(0, 10)
                         .map((p: any, idx: number) => (
-                          <tr key={idx} className="border-b border-gray-800/40 text-gray-300">
+                          <tr key={idx} className="border-b border-borderColor/40 text-gray-300">
                             <td className="px-3 py-2.5 font-bold text-[#f5c518]">#{p.rank || idx + 1}</td>
                             <td className="px-3 py-2.5 truncate font-medium max-w-[120px]">{p.name || 'Player'}</td>
                             <td className="px-3 py-2.5 text-center font-bold text-gray-200">{p.kills || 0}</td>
@@ -836,15 +856,15 @@ export default function Home() {
           {/* Room ID & Pass section */}
           {selectedMatch.roomId ? (
             isRoomReleased ? (
-              <div className="bg-[#132040] rounded-2xl p-5 text-center shadow-lg border border-[#f5c518]/20 space-y-4">
+              <div className="bg-bgSurface rounded-2xl p-5 text-center shadow-lg border border-[#f5c518]/20 space-y-4">
                 <div className="border-b border-gray-700/50 pb-2">
-                  <p className="text-gray-400 text-[10px] tracking-widest font-bold uppercase mb-1">🎮 CUSTOM ROOM DETAILS</p>
-                  <span className="bg-green-500 text-white font-bold text-[9px] px-2 py-0.5 rounded">RELEASED</span>
+                  <p className="text-textSecondary text-[10px] tracking-widest font-bold uppercase mb-1">🎮 CUSTOM ROOM DETAILS</p>
+                  <span className="bg-green-500 text-textPrimary font-bold text-[9px] px-2 py-0.5 rounded">RELEASED</span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#0a1628] p-3 rounded-xl border border-gray-700/30">
-                    <p className="text-gray-500 text-[9px] mb-1 uppercase">Room ID</p>
+                    <p className="text-textSecondary text-[9px] mb-1 uppercase">Room ID</p>
                     <p className="text-[#f5c518] font-black text-base tracking-widest select-all">{selectedMatch.roomId}</p>
                     <button onClick={() => { navigator.clipboard.writeText(selectedMatch.roomId); setWalletMsg('📋 Room ID Copied!'); setTimeout(() => setWalletMsg(''), 2000); }}
                       className="mt-2 text-[10px] bg-[#f5c518] text-black font-bold px-2 py-1 rounded hover:opacity-90 active:scale-95 transition">
@@ -853,11 +873,11 @@ export default function Home() {
                   </div>
                   
                   <div className="bg-[#0a1628] p-3 rounded-xl border border-gray-700/30">
-                    <p className="text-gray-500 text-[9px] mb-1 uppercase">Password</p>
-                    <p className="text-white font-bold text-base select-all">{selectedMatch.roomPass || 'N/A'}</p>
+                    <p className="text-textSecondary text-[9px] mb-1 uppercase">Password</p>
+                    <p className="text-textPrimary font-bold text-base select-all">{selectedMatch.roomPass || 'N/A'}</p>
                     {selectedMatch.roomPass && (
                       <button onClick={() => { navigator.clipboard.writeText(selectedMatch.roomPass); setWalletMsg('📋 Password Copied!'); setTimeout(() => setWalletMsg(''), 2000); }}
-                        className="mt-2 text-[10px] bg-white text-black font-bold px-2 py-1 rounded hover:opacity-90 active:scale-95 transition">
+                        className="mt-2 text-[10px] bg-bgSurface text-black font-bold px-2 py-1 rounded hover:opacity-90 active:scale-95 transition">
                         Copy
                       </button>
                     )}
@@ -865,8 +885,8 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="bg-[#132040] rounded-2xl p-5 text-center shadow-lg border border-gray-800 space-y-2">
-                <p className="text-gray-400 text-xs font-semibold">🔒 Room ID & Password</p>
+              <div className="bg-bgSurface rounded-2xl p-5 text-center shadow-lg border border-borderColor space-y-2">
+                <p className="text-textSecondary text-xs font-semibold">🔒 Room ID & Password</p>
                 <p className="text-xs text-yellow-500 font-bold bg-[#f5c518]/10 p-2.5 rounded-xl">
                   Revealing automatically exactly 10 minutes before the match start time!
                 </p>
@@ -874,9 +894,9 @@ export default function Home() {
             )
           ) : (
             joined && (
-              <div className="bg-[#132040] rounded-2xl p-5 text-center shadow-lg border border-gray-800 space-y-1">
-                <p className="text-gray-400 text-xs font-semibold">🔒 Room ID & Password</p>
-                <p className="text-xs text-gray-500">Not released yet by the Host / Admin.</p>
+              <div className="bg-bgSurface rounded-2xl p-5 text-center shadow-lg border border-borderColor space-y-1">
+                <p className="text-textSecondary text-xs font-semibold">🔒 Room ID & Password</p>
+                <p className="text-xs text-textSecondary">Not released yet by the Host / Admin.</p>
               </div>
             )
           )}
@@ -888,25 +908,29 @@ export default function Home() {
             </div>
           )}
 
-          <div className="fixed bottom-0 left-0 right-0 bg-white p-3 space-y-2 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+          <div className="fixed bottom-0 left-0 right-0 bg-bgSurface p-3 space-y-2 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
             {/* View All Joinings */}
             <button onClick={() => setShowJoinings(true)}
-              className="w-full py-3 rounded-lg bg-[#132040] text-white font-bold text-sm tracking-wide shadow-sm hover:opacity-90 transition">
+              className="w-full py-3 rounded-lg bg-bgSurface text-textPrimary font-bold text-sm tracking-wide shadow-sm hover:opacity-90 transition">
               VIEW JOINED PLAYERS
             </button>
 
             {/* Join Button */}
             {isFull ? (
-              <button disabled className="w-full py-3 rounded-lg bg-gray-300 text-white font-bold text-sm tracking-wide shadow-sm">
+              <button disabled className="w-full py-3 rounded-lg bg-gray-300 text-textPrimary font-bold text-sm tracking-wide shadow-sm">
                 JOINING FULL
               </button>
+            ) : (user?.role === 'host' || user?.role === 'admin' || user?.role === 'finance_admin') ? (
+              <button disabled className="w-full py-3 rounded-lg bg-gray-500 text-textPrimary font-bold text-sm tracking-wide shadow-sm">
+                🚫 STAFF CANNOT JOIN
+              </button>
             ) : joined ? (
-              <button disabled className="w-full py-3 rounded-lg bg-green-500 text-white font-bold text-sm tracking-wide shadow-sm">
+              <button disabled className="w-full py-3 rounded-lg bg-green-500 text-textPrimary font-bold text-sm tracking-wide shadow-sm">
                 ✅ ALREADY JOINED
               </button>
             ) : (
               <button onClick={() => handleJoin(selectedMatch._id)} disabled={joining}
-                className="w-full py-3 rounded-lg bg-[#8cc63f] text-white font-bold text-sm tracking-wide shadow-sm hover:bg-green-500 transition active:scale-95">
+                className="w-full py-3 rounded-lg bg-[#8cc63f] text-textPrimary font-bold text-sm tracking-wide shadow-sm hover:bg-green-500 transition active:scale-95">
                 {joining ? 'JOINING...' : `JOIN MATCH (🪙 ${selectedMatch.entryFee})`}
               </button>
             )}
@@ -916,50 +940,98 @@ export default function Home() {
     );
   }
 
+  const handleUpdateSlot = async (matchId: string, playerId: string) => {
+    try {
+      const res = await fetch(`${API_URL}/admin/tournaments/${matchId}/players/${playerId}/slot`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify({ teamNo: newSlot, position: newPosition })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const updatedTournaments = tournaments.map((t: any) => t._id === matchId ? { ...t, joinedPlayers: data.joinedPlayers } : t);
+        setTournaments(updatedTournaments);
+        setSelectedMatch({ ...selectedMatch, joinedPlayers: data.joinedPlayers });
+        setEditingSlotFor(null);
+      } else {
+        const err = await res.json();
+        alert(err.msg || 'Failed to update slot');
+      }
+    } catch (e) {
+      alert('Error updating slot');
+    }
+  };
+
   // ─── All Joinings Screen ──────────────────────────────────────────────────
   if (showJoinings && selectedMatch) {
     return (
-      <div className="min-h-screen bg-white pb-20 relative">
+      <div className="min-h-screen bg-bgSurface pb-20 relative">
         <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 shadow-md rounded-b-2xl">
-          <button onClick={() => setShowJoinings(false)} className="text-white">
+          <button onClick={() => setShowJoinings(false)} className="text-textPrimary">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h2 className="text-white font-bold text-base flex-1 text-center">All Joinings</h2>
+          <h2 className="text-textPrimary font-bold text-base flex-1 text-center">All Joinings</h2>
           <div className="w-6" />
         </div>
 
         <div className="overflow-x-auto mt-4 px-2">
-          <table className="w-full text-sm bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <table className="w-full text-sm bg-bgPrimary rounded-xl overflow-hidden shadow-sm border border-borderColor">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-3 py-4 text-left text-[11px] text-gray-500 font-bold uppercase">Team No.</th>
-                <th className="px-3 py-4 text-left text-[11px] text-gray-500 font-bold uppercase">Pos.</th>
-                <th className="px-3 py-4 text-left text-[11px] text-gray-500 font-bold uppercase">In Game Name</th>
-                <th className="px-3 py-4 text-left text-[11px] text-gray-500 font-bold uppercase">In Game Id</th>
+                <th className="px-3 py-4 text-left text-[11px] text-textSecondary font-bold uppercase">Team No.</th>
+                <th className="px-3 py-4 text-left text-[11px] text-textSecondary font-bold uppercase">Pos.</th>
+                <th className="px-3 py-4 text-left text-[11px] text-textSecondary font-bold uppercase">In Game Name</th>
+                <th className="px-3 py-4 text-left text-[11px] text-textSecondary font-bold uppercase">In Game Id</th>
+                {(user?.role === 'admin' || user?.role === 'finance_admin' || user?.role === 'host') && (
+                  <th className="px-3 py-4 text-right text-[11px] text-textSecondary font-bold uppercase">Action</th>
+                )}
               </tr>
             </thead>
             <tbody>
-              {selectedMatch.joinedPlayers?.map((p: any, i: number) => (
-                <tr key={i} className="border-b border-gray-100 bg-white">
-                  <td className="px-3 py-4 text-gray-600 font-medium">{p.teamNo || i + 1}</td>
-                  <td className="px-3 py-4 text-gray-600 font-medium">{p.position || 'A'}</td>
-                  <td className="px-3 py-4 font-semibold text-gray-900">{p.name || p.user?.username || '--'}</td>
-                  <td className="px-3 py-4 text-gray-600 font-medium">{p.uid || p.user?.ffUid || '--'}</td>
-                </tr>
-              ))}
+              {selectedMatch.joinedPlayers?.map((p: any, i: number) => {
+                const isEditing = editingSlotFor === (p.user?._id || p.user);
+                return (
+                  <tr key={i} className="border-b border-borderColor bg-bgSurface">
+                    <td className="px-3 py-4 text-gray-600 font-medium">
+                      {isEditing ? <input type="number" value={newSlot} onChange={e => setNewSlot(e.target.value)} className="w-12 border p-1 rounded" /> : (p.teamNo || i + 1)}
+                    </td>
+                    <td className="px-3 py-4 text-gray-600 font-medium">
+                      {isEditing ? <input type="text" value={newPosition} onChange={e => setNewPosition(e.target.value)} className="w-10 border p-1 rounded uppercase" maxLength={1} /> : (p.position || 'A')}
+                    </td>
+                    <td className="px-3 py-4 font-semibold text-textPrimary">{p.name || p.user?.username || '--'}</td>
+                    <td className="px-3 py-4 text-gray-600 font-medium">{p.uid || p.user?.ffUid || '--'}</td>
+                    {(user?.role === 'admin' || user?.role === 'finance_admin' || user?.role === 'host') && (
+                      <td className="px-3 py-4 text-right">
+                        {isEditing ? (
+                          <div className="flex gap-2 justify-end">
+                            <button onClick={() => handleUpdateSlot(selectedMatch._id, p.user?._id || p.user)} className="text-green-500 text-xs font-bold bg-green-50 px-2 py-1 rounded">Save</button>
+                            <button onClick={() => setEditingSlotFor(null)} className="text-gray-500 text-xs font-bold bg-gray-50 px-2 py-1 rounded">Cancel</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => {
+                            setEditingSlotFor(p.user?._id || p.user);
+                            setNewSlot(p.teamNo?.toString() || (i + 1).toString());
+                            setNewPosition(p.position || 'A');
+                          }} className="text-blue-500 text-xs font-bold bg-blue-50 px-2 py-1 rounded hover:bg-blue-100">Edit</button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {(!selectedMatch.joinedPlayers || selectedMatch.joinedPlayers.length === 0) && (
-            <div className="text-center py-12 text-gray-400">No players joined yet.</div>
+            <div className="text-center py-12 text-textSecondary">No players joined yet.</div>
           )}
         </div>
 
         {/* Bottom buttons */}
         <div className="fixed bottom-0 left-0 right-0 flex h-14 z-20">
-          <button className="flex-1 bg-[#58d68d] text-white font-bold tracking-wide hover:opacity-90 active:scale-95 transition">
+          <button className="flex-1 bg-[#58d68d] text-textPrimary font-bold tracking-wide hover:opacity-90 active:scale-95 transition">
             MY ENTRIES
           </button>
-          <button onClick={() => setShowJoinings(false)} className="flex-1 bg-[#54a0ff] text-white font-bold tracking-wide hover:opacity-90 active:scale-95 transition">
+          <button onClick={() => setShowJoinings(false)} className="flex-1 bg-[#54a0ff] text-textPrimary font-bold tracking-wide hover:opacity-90 active:scale-95 transition">
             SHOW DETAILS
           </button>
         </div>
@@ -973,11 +1045,11 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-[#f0f2f5] pb-6">
         {/* Header */}
-        <div className="bg-[#132040] px-4 py-4 flex items-center gap-3">
-          <button onClick={() => setSelectedMyMatchesTab(null)} className="text-white">
+        <div className="bg-bgSurface px-4 py-4 flex items-center gap-3">
+          <button onClick={() => setSelectedMyMatchesTab(null)} className="text-textPrimary">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h2 className="text-white font-bold text-base flex-1 text-center capitalize">
+          <h2 className="text-textPrimary font-bold text-base flex-1 text-center capitalize">
             My {selectedMyMatchesTab} Matches
           </h2>
           <div className="w-6" />
@@ -986,7 +1058,7 @@ export default function Home() {
         {/* Contest Cards */}
         <div className="px-4 py-4 space-y-4">
           {filteredJoinedMatches.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-textSecondary">
               <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>No joined {selectedMyMatchesTab} matches</p>
             </div>
@@ -995,7 +1067,7 @@ export default function Home() {
             return (
               <motion.div key={match._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 onClick={() => setSelectedMatch(match)}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer active:scale-[0.99] transition">
+                className="bg-bgSurface rounded-2xl overflow-hidden shadow-sm cursor-pointer active:scale-[0.99] transition">
                 {/* Banner */}
                 {(() => {
                   const specialBanner = getSpecialBanner(match.category);
@@ -1012,7 +1084,7 @@ export default function Home() {
                       <img src={bannerSrc} alt={match.category} className="w-full h-full object-cover" />
                       <div className={`absolute inset-0 bg-black/40 flex items-center justify-center ${match.bannerImage ? 'hidden' : ''}`}>
                         <div className="text-center">
-                          <p className="text-white font-black text-xl tracking-widest uppercase">{match.category}</p>
+                          <p className="text-textPrimary font-black text-xl tracking-widest uppercase">{match.category}</p>
                           <p className="text-yellow-300 text-xs font-semibold mt-1">TOURNAMENT</p>
                         </div>
                       </div>
@@ -1021,7 +1093,7 @@ export default function Home() {
                       </div>
                       {match.status === 'ongoing' && (
                         <div className="absolute top-3 left-3 bg-green-500 rounded px-2 py-1">
-                          <span className="text-white text-xs font-bold">🔴 LIVE</span>
+                          <span className="text-textPrimary text-xs font-bold">🔴 LIVE</span>
                         </div>
                       )}
                     </div>
@@ -1030,10 +1102,10 @@ export default function Home() {
 
                 {/* Info */}
                 <div className="p-4">
-                  <p className="font-bold text-sm text-gray-900 mb-1 leading-snug">{match.title}</p>
+                  <p className="font-bold text-sm text-textPrimary mb-1 leading-snug">{match.title}</p>
                   <div className="flex justify-between items-center mb-2">
-                    <p className="text-gray-500 text-xs font-semibold">Start: {match.date} at {match.time}</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${match.status === 'ongoing' ? 'bg-red-500 text-white animate-pulse' : match.status === 'completed' ? 'bg-green-500 text-white' : 'bg-[#132040] text-white'}`}>{match.status === 'ongoing' ? 'LIVE' : match.status}</span>
+                    <p className="text-textSecondary text-xs font-semibold">Start: {match.date} at {match.time}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${match.status === 'ongoing' ? 'bg-red-500 text-textPrimary animate-pulse' : match.status === 'completed' ? 'bg-green-500 text-textPrimary' : 'bg-bgSurface text-textPrimary'}`}>{match.status === 'ongoing' ? 'LIVE' : match.status}</span>
                   </div>
                   {match.registrationClosingTime && match.status === 'upcoming' && (
                     <p className="text-red-500 text-[10px] font-bold mb-2 border border-red-100 bg-red-50 px-2 py-1 rounded inline-block">Reg Closes: {new Date(match.registrationClosingTime).toLocaleString()}</p>
@@ -1042,15 +1114,15 @@ export default function Home() {
                   {match.status !== 'completed' && <CountdownTimer match={match} />}
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase">Prize Pool</p>
+                      <p className="text-textSecondary text-[10px] uppercase">Prize Pool</p>
                       <p className="font-bold text-sm">🪙 {match.prizePool}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase">Per Kill</p>
+                      <p className="text-textSecondary text-[10px] uppercase">Per Kill</p>
                       <p className="font-bold text-sm">🪙 {match.perKill}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase">Entry Fee</p>
+                      <p className="text-textSecondary text-[10px] uppercase">Entry Fee</p>
                       <p className="font-bold text-sm">🪙 {match.entryFee}</p>
                     </div>
                   </div>
@@ -1060,7 +1132,7 @@ export default function Home() {
                     <span className="text-green-600 text-xs font-bold flex items-center gap-1">
                       <CheckCircle className="w-4.5 h-4.5" /> Joined Match
                     </span>
-                    <span className="text-[10px] text-gray-400 font-mono">ID: {match.matchId}</span>
+                    <span className="text-[10px] text-textSecondary font-mono">ID: {match.matchId}</span>
                   </div>
                 </div>
               </motion.div>
@@ -1078,10 +1150,10 @@ export default function Home() {
       <div className="min-h-screen bg-[#f0f2f5] pb-6">
         {/* Header */}
         <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-          <button onClick={() => setSelectedCategory(null)} className="text-white">
+          <button onClick={() => setSelectedCategory(null)} className="text-textPrimary">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <h2 className="text-white font-bold text-base flex-1 text-center">
+          <h2 className="text-textPrimary font-bold text-base flex-1 text-center">
             {cat?.label} Contests
           </h2>
           <div className="w-6" />
@@ -1091,10 +1163,10 @@ export default function Home() {
         <div className="flex bg-[#042e5a] px-4 pt-2 -mt-4 pb-0 rounded-b-2xl shadow-sm z-0 relative">
           {[{ id: 'ongoing', label: 'Ongoing' }, { id: 'upcoming', label: 'Upcoming' }, { id: 'completed', label: 'Resulted' }].map(tab => (
             <button key={tab.id} onClick={() => setContestTab(tab.id as any)}
-              className={`flex-1 py-3 text-sm font-semibold transition-all relative ${contestTab === tab.id ? 'text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              className={`flex-1 py-3 text-sm font-semibold transition-all relative ${contestTab === tab.id ? 'text-textPrimary' : 'text-textSecondary hover:text-gray-200'}`}>
               {tab.label}
               {contestTab === tab.id && (
-                <div className="absolute bottom-0 left-1/4 right-1/4 h-1 bg-white rounded-t-full" />
+                <div className="absolute bottom-0 left-1/4 right-1/4 h-1 bg-bgSurface rounded-t-full" />
               )}
             </button>
           ))}
@@ -1103,7 +1175,7 @@ export default function Home() {
         {/* Contest Cards */}
         <div className="px-4 py-4 space-y-4">
           {filteredByTab.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-textSecondary">
               <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>No {contestTab === 'completed' ? 'resulted' : contestTab} contests</p>
             </div>
@@ -1113,7 +1185,7 @@ export default function Home() {
             return (
               <motion.div key={match._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 onClick={() => setSelectedMatch(match)}
-                className="bg-white rounded-xl overflow-hidden shadow-md cursor-pointer active:scale-[0.99] transition border border-gray-100">
+                className="bg-bgSurface rounded-xl overflow-hidden shadow-md cursor-pointer active:scale-[0.99] transition border border-borderColor">
                 {/* Banner */}
                 {(() => {
                   const specialBanner = getSpecialBanner(match.category);
@@ -1130,13 +1202,13 @@ export default function Home() {
                       <img src={bannerSrc} alt={match.category} className="w-full h-full object-cover" />
                       {match.status === 'ongoing' && (
                         <div className="absolute top-3 left-3 bg-red-500 rounded px-2 py-1">
-                          <span className="text-white text-xs font-bold uppercase tracking-widest animate-pulse">Live</span>
+                          <span className="text-textPrimary text-xs font-bold uppercase tracking-widest animate-pulse">Live</span>
                         </div>
                       )}
                       {/* Avatar overlay - simulated */}
                       <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
                         <div className="w-12 h-12 rounded-full border-2 border-red-500 bg-[#042e5a] shadow-lg flex items-center justify-center overflow-hidden">
-                          <User className="w-6 h-6 text-white" />
+                          <User className="w-6 h-6 text-textPrimary" />
                         </div>
                       </div>
                     </div>
@@ -1145,10 +1217,10 @@ export default function Home() {
 
                 {/* Info */}
                 <div className="p-4 pt-8">
-                  <p className="font-bold text-sm text-gray-900 mb-1 leading-snug">{match.title}</p>
+                  <p className="font-bold text-sm text-textPrimary mb-1 leading-snug">{match.title}</p>
                   <div className="flex justify-between items-center mb-4">
-                    <p className="text-gray-500 text-xs font-semibold">Start: {match.date} at {match.time}</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${match.status === 'ongoing' ? 'bg-red-500 text-white animate-pulse' : match.status === 'completed' ? 'bg-green-500 text-white' : 'bg-[#132040] text-white'}`}>{match.status === 'ongoing' ? 'LIVE' : match.status}</span>
+                    <p className="text-textSecondary text-xs font-semibold">Start: {match.date} at {match.time}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${match.status === 'ongoing' ? 'bg-red-500 text-textPrimary animate-pulse' : match.status === 'completed' ? 'bg-green-500 text-textPrimary' : 'bg-bgSurface text-textPrimary'}`}>{match.status === 'ongoing' ? 'LIVE' : match.status}</span>
                   </div>
                   {match.registrationClosingTime && match.status === 'upcoming' && (
                     <p className="text-red-500 text-[10px] font-bold mb-3 border border-red-100 bg-red-50 px-2 py-1 rounded inline-block">Reg Closes: {new Date(match.registrationClosingTime).toLocaleString()}</p>
@@ -1156,34 +1228,34 @@ export default function Home() {
 
                   <div className="grid grid-cols-3 gap-y-4 mb-4">
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold mb-1">Prize Pool</p>
-                      <p className="font-bold text-sm text-gray-800 flex items-center justify-center gap-1">🪙 {match.prizePool}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold mb-1">Prize Pool</p>
+                      <p className="font-bold text-sm text-textPrimary flex items-center justify-center gap-1">🪙 {match.prizePool}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold mb-1">Per Kill</p>
-                      <p className="font-bold text-sm text-gray-800 flex items-center justify-center gap-1">🪙 {match.perKill}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold mb-1">Per Kill</p>
+                      <p className="font-bold text-sm text-textPrimary flex items-center justify-center gap-1">🪙 {match.perKill}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold mb-1">Entry Fee</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold mb-1">Entry Fee</p>
                       <p className="font-bold text-sm text-[#f5c518] flex items-center justify-center gap-1">🪙 {match.entryFee}</p>
                     </div>
                     
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold mb-1">Type</p>
-                      <p className="font-bold text-sm text-gray-800">{match.teamType}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold mb-1">Type</p>
+                      <p className="font-bold text-sm text-textPrimary">{match.teamType}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold mb-1">Entry Per Player</p>
-                      <p className="font-bold text-sm text-gray-800">{match.totalSlots}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold mb-1">Entry Per Player</p>
+                      <p className="font-bold text-sm text-textPrimary">{match.totalSlots}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold mb-1">Map</p>
-                      <p className="font-bold text-sm text-gray-800">{match.map}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold mb-1">Map</p>
+                      <p className="font-bold text-sm text-textPrimary">{match.map}</p>
                     </div>
                   </div>
 
                   {/* Spots bar & Join button */}
-                  <div className="flex items-end justify-between border-t border-gray-200 mt-2 pt-3">
+                  <div className="flex items-end justify-between border-t border-borderColor mt-2 pt-3">
                     <div className="flex-1 mr-4 pb-1">
                       {match.status !== 'completed' && <CountdownTimer match={match} />}
                       <div className="flex justify-between text-[11px] mb-1 font-bold">
@@ -1195,7 +1267,7 @@ export default function Home() {
                           style={{ width: `${Math.min(100, ((match.joinedPlayers?.length || 0) / match.totalSlots) * 100)}%` }} />
                       </div>
                     </div>
-                    <button className={`px-4 py-2 rounded font-bold text-sm tracking-wide ${isFull ? 'bg-[#54a0ff] text-white' : 'bg-[#8cc63f] text-white'}`}>
+                    <button className={`px-4 py-2 rounded font-bold text-sm tracking-wide ${isFull ? 'bg-[#54a0ff] text-textPrimary' : 'bg-[#8cc63f] text-textPrimary'}`}>
                       {isFull ? 'Joining Full' : 'Join Now'}
                     </button>
                   </div>
@@ -1221,53 +1293,53 @@ export default function Home() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 z-50 flex items-end">
               <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                className="w-full bg-white rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
+                className="w-full bg-bgSurface rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold text-lg text-[#132040]">Create New Match</h3>
-                  <button onClick={() => setShowCreateMatch(false)} className="text-gray-400">
+                  <button onClick={() => setShowCreateMatch(false)} className="text-textSecondary">
                     <XCircle className="w-6 h-6" />
                   </button>
                 </div>
                 <form onSubmit={handleCreateMatch} className="space-y-4">
-                  <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
-                  <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 bg-white" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
+                  <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
+                  <select className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
                     {GAME_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                   <div className="grid grid-cols-2 gap-3">
-                    <input className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Date (YYYY-MM-DD)" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required />
-                    <input className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Time (HH:MM AM/PM)" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required />
+                    <input className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Date (YYYY-MM-DD)" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required />
+                    <input className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Time (HH:MM AM/PM)" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required />
                   </div>
                   <div className="grid grid-cols-3 gap-3">
-                    <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Entry Fee" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: e.target.value})} required />
-                    <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Prize Pool" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: e.target.value})} required />
-                    <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Per Kill" value={newMatch.perKill} onChange={e => setNewMatch({...newMatch, perKill: e.target.value})} />
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Entry Fee" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: e.target.value})} required />
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Prize Pool" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: e.target.value})} required />
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Per Kill" value={newMatch.perKill} onChange={e => setNewMatch({...newMatch, perKill: e.target.value})} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" placeholder="Total Slots" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: e.target.value})} required />
-                    <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 bg-white" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})}>
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Total Slots" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: e.target.value})} required />
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})}>
                       <option>Bermuda</option><option>Kalahari</option><option>Purgatory</option><option>Alpine</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
-                    <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 bg-white" value={newMatch.teamType} onChange={e => setNewMatch({...newMatch, teamType: e.target.value})}>
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.teamType} onChange={e => setNewMatch({...newMatch, teamType: e.target.value})}>
                       <option>Solo</option><option>Duo</option><option>Squad</option>
                     </select>
-                    <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 bg-white" value={newMatch.mode} onChange={e => setNewMatch({...newMatch, mode: e.target.value})}>
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.mode} onChange={e => setNewMatch({...newMatch, mode: e.target.value})}>
                       <option>Solo</option><option>1v1</option><option>2v2</option><option>4v4</option>
                     </select>
-                    <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 bg-white" value={newMatch.matchType} onChange={e => setNewMatch({...newMatch, matchType: e.target.value})}>
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.matchType} onChange={e => setNewMatch({...newMatch, matchType: e.target.value})}>
                       <option>Paid</option><option>Free</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Prize Distribution (format: 1st:55,2nd:40,...)</label>
-                    <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900" value={newMatch.prizeDistribution} onChange={e => setNewMatch({...newMatch, prizeDistribution: e.target.value})} />
+                    <label className="text-xs text-textSecondary mb-1 block">Prize Distribution (format: 1st:55,2nd:40,...)</label>
+                    <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" value={newMatch.prizeDistribution} onChange={e => setNewMatch({...newMatch, prizeDistribution: e.target.value})} />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Rules (one per line)</label>
-                    <textarea rows={4} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none text-gray-900" placeholder="Room Entry Recording is compulsory..." value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
+                    <label className="text-xs text-textSecondary mb-1 block">Rules (one per line)</label>
+                    <textarea rows={4} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm resize-none text-textPrimary" placeholder="Room Entry Recording is compulsory..." value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
                   </div>
-                  <button type="submit" className="w-full bg-[#132040] text-[#f5c518] font-bold py-4 rounded-xl text-sm tracking-widest">
+                  <button type="submit" className="w-full bg-bgSurface text-[#f5c518] font-bold py-4 rounded-xl text-sm tracking-widest">
                     CREATE MATCH
                   </button>
                 </form>
@@ -1283,14 +1355,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#f0f2f5] pb-20">
       {/* Top Header */}
-      <div className="bg-[#132040] px-4 pt-10 pb-4 flex items-center justify-between">
+      <div className="bg-bgSurface px-4 pt-10 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-[#f5c518] to-orange-500 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-white" />
+            <User className="w-5 h-5 text-textPrimary" />
           </div>
           <div>
-            <p className="text-white font-bold text-sm">{user.username}</p>
-            <p className="text-gray-400 text-[10px]">ID: {user.ffUid || 'Set FF UID'}</p>
+            <p className="text-textPrimary font-bold text-sm">{user.username}</p>
+            <p className="text-textSecondary text-[10px]">ID: {user.ffUid || 'Set FF UID'}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -1298,12 +1370,40 @@ export default function Home() {
             <span className="text-[#f5c518] text-sm">🪙</span>
             <span className="text-[#f5c518] font-bold text-sm">{user.coins || 0}</span>
           </div>
-          <button className="relative" onClick={() => {}}>
-            <Bell className="w-6 h-6 text-white" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center">
-              {notifications.length}
-            </span>
-          </button>
+          <div className="flex items-center gap-3">
+            {mounted && (
+              <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 rounded-full hover:bg-black/10 transition">
+                {theme === 'dark' ? <Sun className="w-6 h-6 text-textPrimary" /> : <Moon className="w-6 h-6 text-textPrimary" />}
+              </button>
+            )}
+            <div className="relative">
+              <button className="relative" onClick={() => setShowNotifications(!showNotifications)}>
+                <Bell className="w-6 h-6 text-textPrimary" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-textPrimary flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              </button>
+              
+              {/* Notifications Dropdown */}
+              {showNotifications && (
+                <div className="absolute top-10 right-0 w-64 bg-bgSurface border border-borderColor rounded-xl shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex justify-between items-center mb-2 border-b border-borderColor pb-2">
+                    <h3 className="font-bold text-textPrimary text-sm">Announcements</h3>
+                    <button onClick={() => setShowNotifications(false)} className="text-textSecondary hover:text-textPrimary">
+                      <XCircle size={16} />
+                    </button>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {notifications.map(n => (
+                      <div key={n.id} className="text-xs text-textSecondary bg-bgPrimary p-2 rounded-lg border border-borderColor">
+                        {n.text}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1331,7 +1431,7 @@ export default function Home() {
           </div>
 
           {showInstallBanner && (
-            <div className="bg-gradient-to-r from-[#132040] to-[#1a3060] px-4 py-3 flex justify-between items-center text-white border-b border-gray-700">
+            <div className="bg-gradient-to-r from-[#132040] to-[#1a3060] px-4 py-3 flex justify-between items-center text-textPrimary border-b border-gray-700">
               <div className="flex items-center gap-2">
                 <span className="text-lg">📲</span>
                 <div className="text-left">
@@ -1340,7 +1440,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => setShowInstallBanner(false)} className="text-xs text-gray-400 font-bold px-2 py-1">
+                <button onClick={() => setShowInstallBanner(false)} className="text-xs text-textSecondary font-bold px-2 py-1">
                   Later
                 </button>
                 <button onClick={handleInstallClick}
@@ -1361,12 +1461,12 @@ export default function Home() {
                 { id: 'completed', label: 'Completed', icon: CheckCircle, color: '#4CAF50', count: myMatches.filter(m => m.status?.toLowerCase() === 'completed').length },
               ].map((item, i) => (
                 <div key={i} onClick={() => setSelectedMyMatchesTab(item.id)}
-                  className="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm cursor-pointer active:scale-95 hover:shadow-md transition-all duration-200">
+                  className="bg-bgSurface rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm cursor-pointer active:scale-95 hover:shadow-md transition-all duration-200">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center relative"
                     style={{ backgroundColor: item.color + '20', border: `2px solid ${item.color}` }}>
                     <item.icon className="w-5 h-5" style={{ color: item.color }} />
                     {item.count > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-textPrimary font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
                         {item.count}
                       </span>
                     )}
@@ -1376,6 +1476,20 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          {/* Promo Banners */}
+          {promoBanners.length > 0 && (
+            <div className="px-4 pb-4">
+              <div className="flex overflow-x-auto gap-3 snap-x snap-mandatory hide-scrollbar rounded-2xl">
+                {promoBanners.map((banner, i) => (
+                  <a key={i} href={banner.link || '#'} target={banner.link ? "_blank" : "_self"} rel="noopener noreferrer" 
+                     className="shrink-0 w-full sm:w-[85%] snap-center rounded-2xl overflow-hidden shadow-md border border-borderColor">
+                    <img src={banner.image} alt="Promo Banner" className="w-full h-36 object-cover bg-bgPrimary" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Esports Games */}
           <div className="px-4 pb-4">
@@ -1390,14 +1504,14 @@ export default function Home() {
                     {/* Content */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
                       <span className="text-3xl mb-1">{cat.icon}</span>
-                      <p className="text-white font-black text-sm text-center tracking-wider leading-tight">
+                      <p className="text-textPrimary font-black text-sm text-center tracking-wider leading-tight">
                         {cat.label}
                       </p>
                     </div>
                     {/* Player count */}
                     <div className="absolute bottom-2 left-3 flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-400 rounded-full" />
-                      <span className="text-white text-[10px] font-semibold">{count}</span>
+                      <span className="text-textPrimary text-[10px] font-semibold">{count}</span>
                     </div>
                     {/* FF MAX badge */}
                     <div className="absolute top-2 right-2 bg-black/40 rounded px-1 py-0.5">
@@ -1427,22 +1541,22 @@ export default function Home() {
               .sort((a, b) => b.kills - a.kills)
               .slice(0, 20)
               .map((player, i) => (
-                <div key={i} className="bg-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
-                  <span className={`font-black text-sm w-6 text-center ${i === 0 ? 'text-yellow-500' : i === 1 ? 'text-gray-400' : i === 2 ? 'text-orange-600' : 'text-gray-500'}`}>
+                <div key={i} className="bg-bgSurface rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
+                  <span className={`font-black text-sm w-6 text-center ${i === 0 ? 'text-yellow-500' : i === 1 ? 'text-textSecondary' : i === 2 ? 'text-orange-600' : 'text-textSecondary'}`}>
                     {i + 1}
                   </span>
                   <div className="w-8 h-8 bg-gradient-to-br from-[#132040] to-[#1a73e8] rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
+                    <User className="w-4 h-4 text-textPrimary" />
                   </div>
-                  <p className="flex-1 font-semibold text-sm text-gray-900">{player.name}</p>
+                  <p className="flex-1 font-semibold text-sm text-textPrimary">{player.name}</p>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">Kills: <span className="font-bold text-red-500">{player.kills}</span></p>
-                    <p className="text-xs text-gray-500">Wins: <span className="font-bold text-yellow-500">{player.wins}</span></p>
+                    <p className="text-xs text-textSecondary">Kills: <span className="font-bold text-red-500">{player.kills}</span></p>
+                    <p className="text-xs text-textSecondary">Wins: <span className="font-bold text-yellow-500">{player.wins}</span></p>
                   </div>
                 </div>
               ))}
             {tournaments.length === 0 && (
-              <div className="text-center py-16 text-gray-400">No data yet</div>
+              <div className="text-center py-16 text-textSecondary">No data yet</div>
             )}
           </div>
         </div>
@@ -1454,20 +1568,20 @@ export default function Home() {
 
           {/* Balance */}
           <div className="bg-gradient-to-br from-[#132040] to-[#1a3060] rounded-2xl p-5 mb-5 shadow-lg text-center">
-            <p className="text-gray-400 text-xs mb-1">Your Balance</p>
+            <p className="text-textSecondary text-xs mb-1">Your Balance</p>
             <p className="text-[#f5c518] font-black text-4xl">🪙 {user.coins || 0}</p>
-            <p className="text-gray-400 text-xs mt-1">Winnings: ₹{user.winnings || 0}</p>
+            <p className="text-textSecondary text-xs mt-1">Winnings: ₹{user.winnings || 0}</p>
           </div>
 
           {/* Deposit */}
-          <div className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
+          <div className="bg-bgSurface rounded-2xl p-5 mb-4 shadow-sm">
             <h3 className="font-bold text-sm text-[#132040] mb-3">Deposit Coins</h3>
             <div className="flex gap-3">
               <input type="number" placeholder="Amount (₹)" value={depositAmt}
                 onChange={e => setDepositAmt(e.target.value)}
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] text-gray-900" />
+                className="flex-1 border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] text-textPrimary" />
               <button onClick={handleDeposit}
-                className="bg-[#132040] text-[#f5c518] font-bold px-5 py-3 rounded-xl text-sm">
+                className="bg-bgSurface text-[#f5c518] font-bold px-5 py-3 rounded-xl text-sm">
                 PAY
               </button>
             </div>
@@ -1479,22 +1593,22 @@ export default function Home() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center px-4">
                 <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
-                  className="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
+                  className="bg-bgSurface rounded-2xl p-6 w-full max-w-sm text-center">
                   <h3 className="font-bold text-lg text-[#132040] mb-2">Scan & Pay</h3>
-                  <p className="text-gray-500 text-xs mb-4">Pay ₹{depositAmt} via UPI</p>
-                  <div className="bg-white p-3 rounded-xl border-2 border-[#f5c518] w-44 h-44 mx-auto mb-4">
+                  <p className="text-textSecondary text-xs mb-4">Pay ₹{depositAmt} via UPI</p>
+                  <div className="bg-bgSurface p-3 rounded-xl border-2 border-[#f5c518] w-44 h-44 mx-auto mb-4">
                     <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=7017022966@ibl%26pn=FragArena%26am=${depositAmt}%26cu=INR`}
                       alt="UPI QR" className="w-full h-full object-contain" />
                   </div>
-                  <p className="text-xs text-gray-500 mb-4">Scan with GPay, PhonePe, Paytm</p>
+                  <p className="text-xs text-textSecondary mb-4">Scan with GPay, PhonePe, Paytm</p>
                   <input type="text" placeholder="Enter UTR / Transaction ID" value={depositUtr}
                     onChange={e => setDepositUtr(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] mb-4 text-center text-gray-900 font-semibold" />
+                    className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] mb-4 text-center text-textPrimary font-semibold" />
                   <div className="flex gap-3">
                     <button onClick={() => setShowDepositQR(false)}
                       className="flex-1 py-3 border border-red-200 text-red-500 font-bold rounded-xl text-sm">Cancel</button>
                     <button onClick={handleVerifyDeposit}
-                      className="flex-1 py-3 bg-[#132040] text-[#f5c518] font-bold rounded-xl text-sm">Submit UTR</button>
+                      className="flex-1 py-3 bg-bgSurface text-[#f5c518] font-bold rounded-xl text-sm">Submit UTR</button>
                   </div>
                 </motion.div>
               </motion.div>
@@ -1504,23 +1618,23 @@ export default function Home() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center px-4">
                 <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
-                  className="bg-white rounded-2xl p-6 w-full max-w-sm text-center space-y-4">
+                  className="bg-bgSurface rounded-2xl p-6 w-full max-w-sm text-center space-y-4">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600 text-2xl">
                     ✅
                   </div>
                   
                   <div>
                     <h3 className="font-bold text-lg text-[#132040]">Request Submitted!</h3>
-                    <p className="text-gray-500 text-xs mt-1">Your withdrawal request has been registered.</p>
+                    <p className="text-textSecondary text-xs mt-1">Your withdrawal request has been registered.</p>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-2 text-left">
+                  <div className="bg-bgPrimary rounded-xl p-4 border border-borderColor space-y-2 text-left">
                     <div>
-                      <p className="text-gray-400 text-[10px] uppercase font-bold">Request ID</p>
-                      <p className="text-gray-800 font-mono font-bold text-sm tracking-wider select-all">{successWithdrawal.txId}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold">Request ID</p>
+                      <p className="text-textPrimary font-mono font-bold text-sm tracking-wider select-all">{successWithdrawal.txId}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-[10px] uppercase font-bold">Amount</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold">Amount</p>
                       <p className="text-green-600 font-black text-base">₹{successWithdrawal.amount}</p>
                     </div>
                   </div>
@@ -1535,12 +1649,12 @@ export default function Home() {
                       const textMsg = encodeURIComponent(`Hello Admin, I have submitted a withdrawal request of ₹${successWithdrawal.amount}. My Request ID is: ${successWithdrawal.txId}. Please approve it.`);
                       window.open(`https://api.whatsapp.com/send?phone=917017022966&text=${textMsg}`, '_blank');
                     }}
-                      className="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow hover:bg-green-600 active:scale-95 transition">
+                      className="w-full bg-green-500 text-textPrimary font-bold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow hover:bg-green-600 active:scale-95 transition">
                       💬 Send Request ID to WhatsApp
                     </button>
 
                     <button onClick={() => setSuccessWithdrawal(null)}
-                      className="w-full py-2.5 text-gray-500 font-bold text-xs hover:underline">
+                      className="w-full py-2.5 text-textSecondary font-bold text-xs hover:underline">
                       Close
                     </button>
                   </div>
@@ -1550,17 +1664,17 @@ export default function Home() {
           </AnimatePresence>
 
           {/* Withdraw */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <div className="bg-bgSurface rounded-2xl p-5 shadow-sm">
             <h3 className="font-bold text-sm text-[#132040] mb-3">Withdraw Winnings</h3>
             <div className="space-y-3">
               <input type="number" placeholder="Amount (₹)" value={withdrawAmt}
                 onChange={e => setWithdrawAmt(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] text-gray-900" />
+                className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] text-textPrimary" />
               <input type="text" placeholder="Your UPI ID" value={withdrawUpi}
                 onChange={e => setWithdrawUpi(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] text-gray-900" />
+                className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] text-textPrimary" />
               <button onClick={handleWithdraw}
-                className="w-full bg-green-500 text-white font-bold py-3 rounded-xl text-sm">
+                className="w-full bg-green-500 text-textPrimary font-bold py-3 rounded-xl text-sm">
                 WITHDRAW
               </button>
             </div>
@@ -1579,49 +1693,49 @@ export default function Home() {
           {/* Top Blue Section */}
           <div className="bg-[#042e5a] px-4 pt-10 pb-6 rounded-b-3xl shadow-md text-center relative z-10">
             <div className="inline-block relative">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center p-1 mx-auto shadow-lg relative z-10">
+              <div className="w-20 h-20 bg-bgSurface rounded-full flex items-center justify-center p-1 mx-auto shadow-lg relative z-10">
                 <div className="w-full h-full bg-gradient-to-br from-[#042e5a] to-[#1a73e8] rounded-full flex items-center justify-center border-2 border-dashed border-[#f5c518]">
-                  <span className="text-white font-black text-3xl">{user.username.charAt(0).toUpperCase()}</span>
+                  <span className="text-textPrimary font-black text-3xl">{user.username.charAt(0).toUpperCase()}</span>
                 </div>
               </div>
             </div>
-            <h2 className="text-white font-bold text-xl mt-3">{user.username}</h2>
+            <h2 className="text-textPrimary font-bold text-xl mt-3">{user.username}</h2>
             <p className="text-gray-300 text-sm mt-1">{user.phone}</p>
             {user.role === 'admin' && (
-              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded font-bold mt-2 inline-block">ADMIN</span>
+              <span className="bg-red-500 text-textPrimary text-xs px-2 py-0.5 rounded font-bold mt-2 inline-block">ADMIN</span>
             )}
           </div>
 
           {/* Stats Row */}
           <div className="flex justify-center gap-4 px-4 -mt-4 relative z-20">
-            <div className="bg-white rounded-xl shadow-md p-3 flex-1 text-center border border-gray-100">
+            <div className="bg-bgSurface rounded-xl shadow-md p-3 flex-1 text-center border border-borderColor">
               <p className="text-[#042e5a] font-black text-xl">0</p>
-              <p className="text-[9px] text-gray-500 font-bold uppercase mt-1">Matches<br/>Played</p>
+              <p className="text-[9px] text-textSecondary font-bold uppercase mt-1">Matches<br/>Played</p>
             </div>
-            <div className="bg-white rounded-xl shadow-md p-3 flex-1 text-center border border-gray-100">
+            <div className="bg-bgSurface rounded-xl shadow-md p-3 flex-1 text-center border border-borderColor">
               <p className="text-[#042e5a] font-black text-xl">0</p>
-              <p className="text-[9px] text-gray-500 font-bold uppercase mt-1">Total<br/>Kills</p>
+              <p className="text-[9px] text-textSecondary font-bold uppercase mt-1">Total<br/>Kills</p>
             </div>
-            <div className="bg-white rounded-xl shadow-md p-3 flex-1 text-center border border-gray-100">
+            <div className="bg-bgSurface rounded-xl shadow-md p-3 flex-1 text-center border border-borderColor">
               <p className="text-[#042e5a] font-black text-xl">0</p>
-              <p className="text-[9px] text-gray-500 font-bold uppercase mt-1">Total<br/>Earning</p>
+              <p className="text-[9px] text-textSecondary font-bold uppercase mt-1">Total<br/>Earning</p>
             </div>
           </div>
 
           {/* FF Profile Details (Edit) */}
           <div className="px-4 mt-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
-              <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+            <div className="bg-bgSurface rounded-2xl shadow-sm border border-borderColor p-4 space-y-4">
+              <div className="flex items-center gap-3 border-b border-borderColor pb-3">
                 <User className="w-5 h-5 text-[#042e5a]" />
                 <h3 className="font-bold text-[#042e5a] text-sm flex-1">MY PROFILE (Free Fire Info)</h3>
               </div>
               <div className="space-y-3">
                 <input value={ffName} onChange={e => setFfName(e.target.value)}
-                  placeholder="Free Fire Name" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#042e5a] text-gray-900 bg-gray-50" />
+                  placeholder="Free Fire Name" className="w-full border border-borderColor rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#042e5a] text-textPrimary bg-bgPrimary" />
                 <input value={ffUid} onChange={e => setFfUid(e.target.value)}
-                  placeholder="Free Fire UID" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#042e5a] text-gray-900 bg-gray-50" />
+                  placeholder="Free Fire UID" className="w-full border border-borderColor rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#042e5a] text-textPrimary bg-bgPrimary" />
                 <button onClick={handleProfileUpdate}
-                  className="w-full bg-[#042e5a] text-white font-bold py-3 rounded-xl text-xs tracking-wide">
+                  className="w-full bg-[#042e5a] text-textPrimary font-bold py-3 rounded-xl text-xs tracking-wide">
                   UPDATE PROFILE
                 </button>
               </div>
@@ -1630,43 +1744,43 @@ export default function Home() {
 
           {/* Menu Options List */}
           <div className="px-4 mt-4 mb-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <button onClick={() => setActiveNav('earn')} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 active:bg-gray-100 transition">
+            <div className="bg-bgSurface rounded-2xl shadow-sm border border-borderColor overflow-hidden">
+              <button onClick={() => setActiveNav('earn')} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-bgPrimary active:bg-gray-100 transition">
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-700">
                   <span className="text-xl">💳</span> MY WALLET
                 </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                <ChevronLeft className="w-5 h-5 text-textSecondary rotate-180" />
               </button>
               
-              <button onClick={() => setSelectedMyMatchesTab('completed')} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 active:bg-gray-100 transition">
+              <button onClick={() => setSelectedMyMatchesTab('completed')} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-bgPrimary active:bg-gray-100 transition">
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-700">
                   <span className="text-xl">🎮</span> MY MATCHES
                 </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                <ChevronLeft className="w-5 h-5 text-textSecondary rotate-180" />
               </button>
               
-              <button onClick={() => setActiveNav('leaderboard')} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 active:bg-gray-100 transition">
+              <button onClick={() => setActiveNav('leaderboard')} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-bgPrimary active:bg-gray-100 transition">
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-700">
                   <span className="text-xl">📊</span> TOP PLAYERS
                 </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                <ChevronLeft className="w-5 h-5 text-textSecondary rotate-180" />
               </button>
 
-              <a href="https://wa.me/917017022966" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 active:bg-gray-100 transition">
+              <a href="https://wa.me/917017022966" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-bgPrimary active:bg-gray-100 transition">
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-700">
                   <span className="text-xl">📞</span> CUSTOMER SUPPORT
                 </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                <ChevronLeft className="w-5 h-5 text-textSecondary rotate-180" />
               </a>
 
               <button onClick={() => {
                 const inviteText = encodeURIComponent(`Hey! Play Free Fire matches on FragArena & earn real cash! 🎮🏆\n\nRegister using my Referral Code: ${user.username} to get 10 Welcome Bonus Coins instantly!\n\nDownload/Join App here: ${window.location.origin}`);
                 window.open(`https://api.whatsapp.com/send?text=${inviteText}`, '_blank');
-              }} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 active:bg-gray-100 transition">
+              }} className="w-full flex items-center justify-between p-4 border-b border-gray-50 hover:bg-bgPrimary active:bg-gray-100 transition">
                 <div className="flex items-center gap-3 text-sm font-bold text-gray-700">
                   <span className="text-xl">📢</span> REFER & EARN
                 </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                <ChevronLeft className="w-5 h-5 text-textSecondary rotate-180" />
               </button>
 
               <button onClick={handleLogout} className="w-full flex items-center justify-between p-4 hover:bg-red-50 active:bg-red-100 transition group">
@@ -1689,7 +1803,7 @@ export default function Home() {
       )}
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 bg-bgSurface border-t border-borderColor flex shadow-2xl">
         {([
           { id: 'earn', icon: Gift, label: 'Earn' },
           { id: 'leaderboard', icon: TrendingUp, label: 'Leaderboard' },
@@ -1697,11 +1811,11 @@ export default function Home() {
           { id: 'menu', icon: Menu, label: 'Menu' },
         ] as const).map(nav => (
           <button key={nav.id} onClick={() => setActiveNav(nav.id)}
-            className={`flex-1 py-3 flex flex-col items-center gap-1 transition ${activeNav === nav.id ? 'text-[#132040]' : 'text-gray-400'}`}>
+            className={`flex-1 py-3 flex flex-col items-center gap-1 transition ${activeNav === nav.id ? 'text-[#132040]' : 'text-textSecondary'}`}>
             <nav.icon className={`w-5 h-5 ${activeNav === nav.id ? 'text-[#132040]' : ''}`} />
             <span className="text-[10px] font-semibold">{nav.label}</span>
             {activeNav === nav.id && (
-              <div className="w-1 h-1 rounded-full bg-[#132040] mt-0.5" />
+              <div className="w-1 h-1 rounded-full bg-bgSurface mt-0.5" />
             )}
           </button>
         ))}
@@ -1713,53 +1827,53 @@ export default function Home() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/80 z-50 flex items-end">
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              className="w-full bg-white rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
+              className="w-full bg-bgSurface rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-lg text-[#132040]">Create New Match</h3>
-                <button onClick={() => setShowCreateMatch(false)} className="text-gray-400">
+                <button onClick={() => setShowCreateMatch(false)} className="text-textSecondary">
                   <XCircle className="w-6 h-6" />
                 </button>
               </div>
               <form onSubmit={handleCreateMatch} className="space-y-4">
-                <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
-                <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
+                <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
+                <select className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
                   {GAME_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
                 <div className="grid grid-cols-2 gap-3">
-                  <input className="border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Date (YYYY-MM-DD)" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required />
-                  <input className="border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Time (09:00 AM)" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required />
+                  <input className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Date (YYYY-MM-DD)" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required />
+                  <input className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Time (09:00 AM)" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Entry Fee" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: e.target.value})} required />
-                  <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Prize Pool" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: e.target.value})} required />
-                  <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Per Kill" value={newMatch.perKill} onChange={e => setNewMatch({...newMatch, perKill: e.target.value})} />
+                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Entry Fee" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: e.target.value})} required />
+                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Prize Pool" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: e.target.value})} required />
+                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Per Kill" value={newMatch.perKill} onChange={e => setNewMatch({...newMatch, perKill: e.target.value})} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <input type="number" className="border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Total Slots" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: e.target.value})} required />
-                  <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})}>
+                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Total Slots" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: e.target.value})} required />
+                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})}>
                     <option>Bermuda</option><option>Kalahari</option><option>Purgatory</option><option>Alpine</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm" value={newMatch.teamType} onChange={e => setNewMatch({...newMatch, teamType: e.target.value})}>
+                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.teamType} onChange={e => setNewMatch({...newMatch, teamType: e.target.value})}>
                     <option>Solo</option><option>Duo</option><option>Squad</option>
                   </select>
-                  <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm" value={newMatch.mode} onChange={e => setNewMatch({...newMatch, mode: e.target.value})}>
+                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.mode} onChange={e => setNewMatch({...newMatch, mode: e.target.value})}>
                     <option>Solo</option><option>1v1</option><option>2v2</option><option>4v4</option>
                   </select>
-                  <select className="border border-gray-200 rounded-xl px-4 py-3 text-sm" value={newMatch.matchType} onChange={e => setNewMatch({...newMatch, matchType: e.target.value})}>
+                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.matchType} onChange={e => setNewMatch({...newMatch, matchType: e.target.value})}>
                     <option>Paid</option><option>Free</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Prize Distribution</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" value={newMatch.prizeDistribution} onChange={e => setNewMatch({...newMatch, prizeDistribution: e.target.value})} />
+                  <label className="text-xs text-textSecondary mb-1 block">Prize Distribution</label>
+                  <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.prizeDistribution} onChange={e => setNewMatch({...newMatch, prizeDistribution: e.target.value})} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Rules (one per line)</label>
-                  <textarea rows={4} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none" value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
+                  <label className="text-xs text-textSecondary mb-1 block">Rules (one per line)</label>
+                  <textarea rows={4} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm resize-none" value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
                 </div>
-                <button type="submit" className="w-full bg-[#132040] text-[#f5c518] font-bold py-4 rounded-xl text-sm tracking-widest">
+                <button type="submit" className="w-full bg-bgSurface text-[#f5c518] font-bold py-4 rounded-xl text-sm tracking-widest">
                   CREATE MATCH
                 </button>
               </form>
@@ -1771,13 +1885,13 @@ export default function Home() {
       {/* Exit App Confirmation Overlay - belongs to Home component */}
       {showExitConfirm && (
         <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
-          <div className="bg-[#0a1628] border border-gray-800 rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl">
+          <div className="bg-[#0a1628] border border-borderColor rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto text-red-500 text-xl font-bold">
               ⚠️
             </div>
             <div className="space-y-1">
-              <h3 className="text-white font-bold text-base">Exit FragArena?</h3>
-              <p className="text-gray-400 text-xs">Are you sure you want to exit the application?</p>
+              <h3 className="text-textPrimary font-bold text-base">Exit FragArena?</h3>
+              <p className="text-textSecondary text-xs">Are you sure you want to exit the application?</p>
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowExitConfirm(false)}
@@ -1785,7 +1899,7 @@ export default function Home() {
                 Cancel
               </button>
               <button onClick={() => { setShowExitConfirm(false); window.close(); }}
-                className="flex-1 py-3 bg-red-500 text-white font-black rounded-xl text-xs hover:bg-red-600 active:scale-95 transition">
+                className="flex-1 py-3 bg-red-500 text-textPrimary font-black rounded-xl text-xs hover:bg-red-600 active:scale-95 transition">
                 Exit
               </button>
             </div>
@@ -1797,6 +1911,56 @@ export default function Home() {
 }
 
 function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setShowCreateMatch, setSelectedCategory, API_URL, categoryBanners, setCategoryBanners }) {
+  const handleFileUpload = async (e, callback) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setMsg('Uploading image...');
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+      const res = await fetch(`${API_URL}/admin/upload-image`, {
+        method: 'POST',
+        headers: { 'x-auth-token': token },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        const fullUrl = API_URL.replace('/api', '') + data.url;
+        callback(fullUrl);
+        setMsg('Image uploaded successfully!');
+        setTimeout(() => setMsg(''), 3000);
+      } else {
+        setMsg('Upload failed: ' + (data.msg || 'Unknown error'));
+      }
+    } catch (err) {
+      setMsg('Upload failed: ' + err.message);
+    }
+  };
+
+  const [adminPromoBanners, setAdminPromoBanners] = useState([]);
+  const [savingPromo, setSavingPromo] = useState(false);
+  useEffect(() => {
+    fetch(`${API_URL}/admin/settings/promo-banners`)
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d)) setAdminPromoBanners(d); });
+  }, [API_URL]);
+
+  const handleSavePromoBanners = async () => {
+    setSavingPromo(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/settings/promo-banners`, {
+        method: 'POST', headers: getHeaders(),
+        body: JSON.stringify({ banners: adminPromoBanners })
+      });
+      if (res.ok) setMsg('Promo Banners updated!');
+    } catch (e) {
+      setMsg('Error saving promo banners');
+    }
+    setSavingPromo(false);
+  };
+
   const [hostedMatches, setHostedMatches] = useState([]);
   const [draftBanners, setDraftBanners] = useState({});
   const [savingBanners, setSavingBanners] = useState(false);
@@ -1829,7 +1993,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
   const [announcementMsg, setAnnouncementMsg] = useState('');
 
   const fetchPendingTransactions = useCallback(async () => {
-    if (user.role !== 'admin') return;
+    if (user.role !== 'admin' && user.role !== 'finance_admin') return;
     setLoadingTransactions(true);
     try {
       const depRes = await fetch(`${API_URL}/admin/deposits`, { headers: getHeaders() });
@@ -1998,7 +2162,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
   const [schedNotice, setSchedNotice] = useState('');
 
   const fetchSchedules = useCallback(async () => {
-    if (user.role !== 'admin') return;
+    if (user.role !== 'admin' && user.role !== 'finance_admin') return;
     setLoadingSchedules(true);
     try {
       const res = await fetch(`${API_URL}/admin/schedules`, { headers: getHeaders() });
@@ -2035,7 +2199,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
   };
 
   const fetchStats = useCallback(async () => {
-    if (user.role !== 'admin') return;
+    if (user.role !== 'admin' && user.role !== 'finance_admin') return;
     setLoadingStats(true);
     try {
       const res = await fetch(`${API_URL}/admin/stats`, { headers: getHeaders() });
@@ -2262,8 +2426,8 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
-      <div className="flex justify-between items-center border-b pb-3 border-gray-100">
+    <div className="bg-bgSurface rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="flex justify-between items-center border-b pb-3 border-borderColor">
         <h3 className="font-bold text-sm text-[#132040]">🛠️ Host/Admin Panel</h3>
         {user.role === 'admin' && (
           <button onClick={() => { setSelectedCategory('BR Survival'); setShowCreateMatch(true); }}
@@ -2273,30 +2437,73 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
         )}
       </div>
 
+
+      {/* Promo Banners Manager */}
       {(user.role === 'admin' || user.role === 'finance_admin') && (
-        <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 space-y-3">
-          <p className="text-xs text-gray-500 font-bold">📊 Platform Analytics</p>
+        <div className="border border-borderColor rounded-2xl p-4 bg-bgSurface space-y-3">
+          <p className="text-xs text-textSecondary font-bold">📢 Manage Promo Banners</p>
+          <div className="space-y-3">
+            {adminPromoBanners.map((banner, i) => (
+              <div key={i} className="border border-borderColor rounded-xl p-3 bg-bgPrimary flex flex-col gap-2 relative">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-semibold text-textSecondary">Banner Image (Upload File)</label>
+                  <div className="flex items-center gap-2">
+                    <input type="file" accept="image/*"
+                      onChange={(e) => handleFileUpload(e, (url) => {
+                        const newBanners = [...adminPromoBanners];
+                        newBanners[i].image = url;
+                        setAdminPromoBanners(newBanners);
+                      })}
+                      className="flex-1 border border-borderColor rounded-lg px-2 py-1.5 text-xs bg-bgSurface text-textPrimary" />
+                    {banner.image && <img src={banner.image} alt="preview" className="w-12 h-10 object-cover rounded shadow-sm" />}
+                  </div>
+                </div>
+                <input type="text" placeholder="Redirect Link (e.g., YouTube/WhatsApp URL)" value={banner.link || ''}
+                  onChange={e => {
+                    const newBanners = [...adminPromoBanners];
+                    newBanners[i].link = e.target.value;
+                    setAdminPromoBanners(newBanners);
+                  }} className="w-full border border-borderColor rounded-lg px-3 py-2 text-xs bg-bgSurface text-textPrimary" />
+                <button onClick={() => {
+                  const newBanners = [...adminPromoBanners];
+                  newBanners.splice(i, 1);
+                  setAdminPromoBanners(newBanners);
+                }} className="absolute top-2 right-2 text-red-500 text-xs font-bold bg-red-100 px-2 py-1 rounded">Remove</button>
+              </div>
+            ))}
+            <button onClick={() => setAdminPromoBanners([...adminPromoBanners, { image: '', link: '' }])}
+              className="w-full py-2 bg-blue-100 text-blue-700 font-bold rounded-xl text-xs">+ Add Banner Slot</button>
+            <button onClick={handleSavePromoBanners} disabled={savingPromo}
+              className="w-full py-2 bg-green-500 text-textPrimary font-bold rounded-xl text-xs shadow-sm active:scale-95 transition">
+              {savingPromo ? 'Saving...' : 'Save All Promo Banners'}
+            </button>
+          </div>
+        </div>
+      )}
+      {(user.role === 'admin' || user.role === 'finance_admin') && (
+        <div className="border border-borderColor rounded-2xl p-4 bg-bgSurface space-y-3">
+          <p className="text-xs text-textSecondary font-bold">📊 Platform Analytics</p>
           {loadingStats ? (
-            <p className="text-xs text-gray-400 text-center py-2">Loading stats...</p>
+            <p className="text-xs text-textSecondary text-center py-2">Loading stats...</p>
           ) : stats ? (
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm text-left">
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Total Users</p>
+              <div className="bg-bgSurface border border-borderColor rounded-xl p-3 shadow-sm text-left">
+                <p className="text-[10px] text-textSecondary font-bold uppercase">Total Users</p>
                 <p className="font-black text-base text-[#132040]">{stats.totalUsers}</p>
               </div>
-              <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm text-left">
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Success Deposits</p>
+              <div className="bg-bgSurface border border-borderColor rounded-xl p-3 shadow-sm text-left">
+                <p className="text-[10px] text-textSecondary font-bold uppercase">Success Deposits</p>
                 <p className="font-black text-base text-green-600">₹{stats.totalDeposits}</p>
                 {stats.totalPendingDeposits > 0 && (
                   <p className="text-[9px] text-yellow-600 font-bold">Pending: ₹{stats.totalPendingDeposits}</p>
                 )}
               </div>
-              <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm text-left">
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Success Withdraws</p>
+              <div className="bg-bgSurface border border-borderColor rounded-xl p-3 shadow-sm text-left">
+                <p className="text-[10px] text-textSecondary font-bold uppercase">Success Withdraws</p>
                 <p className="font-black text-base text-blue-600">₹{stats.totalWithdrawals}</p>
               </div>
-              <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm text-left">
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Pending Withdraws</p>
+              <div className="bg-bgSurface border border-borderColor rounded-xl p-3 shadow-sm text-left">
+                <p className="text-[10px] text-textSecondary font-bold uppercase">Pending Withdraws</p>
                 <p className="font-black text-base text-orange-600">₹{stats.totalPendingWithdrawals}</p>
               </div>
             </div>
@@ -2312,25 +2519,113 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
         </div>
       )}
 
-      <div>
-        <p className="text-xs text-gray-500 font-bold mb-2">Hosted Matches ({hostedMatches.length})</p>
+      {/* Pending Withdrawals (Admin Only) */}
+      {(user.role === 'admin' || user.role === 'finance_admin') && (
+        <div className="border-t pt-4 border-borderColor">
+          <p className="text-xs text-textSecondary font-bold mb-3">Pending Withdrawals ({pendingWithdrawals.length})</p>
+          {pendingWithdrawals.length === 0 ? (
+            <p className="text-xs text-textSecondary text-center py-2 bg-bgPrimary rounded-lg">No pending withdrawals.</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingWithdrawals.map((wit) => (
+                <div key={wit._id} className="border border-orange-200 bg-orange-50/30 rounded-xl p-3 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-bold text-textPrimary">{wit.user?.username || 'Player'}</span>
+                    <span className="text-textSecondary">{wit.user?.phone}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <div>
+                      <p className="text-gray-600 font-semibold">Amount: ₹{wit.amount}</p>
+                      <p className="text-[10px] text-textSecondary font-mono">UPI: {wit.upiId}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleResolveWithdrawal(wit._id, 'reject')}
+                        className="px-3 py-1.5 bg-red-100 text-red-700 font-bold rounded-lg text-[10px]">
+                        Reject
+                      </button>
+                      <button onClick={() => handleResolveWithdrawal(wit._id, 'approve')}
+                        className="px-3 py-1.5 bg-green-500 text-textPrimary font-bold rounded-lg text-[10px]">
+                        Approve
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Daily Schedule Builder (Admin Only) */}
+      {user.role === 'admin' && (
+        <div className="border-t pt-4 border-borderColor space-y-3">
+          <div className="flex justify-between items-center">
+            <p className="text-xs text-textSecondary font-bold">📅 Daily Schedule Builder</p>
+            <button onClick={startAddSchedule}
+              className="bg-bgSurface text-[#f5c518] font-bold px-2.5 py-1 rounded text-[10px] hover:opacity-90 active:scale-95 transition">
+              + Add Slot
+            </button>
+          </div>
+
+          {loadingSchedules ? (
+            <p className="text-xs text-textSecondary text-center py-2">Loading schedule slots...</p>
+          ) : schedules.length === 0 ? (
+            <p className="text-xs text-textSecondary text-center py-2 bg-bgPrimary rounded-lg">No active schedules. Create one to auto-publish matches daily!</p>
+          ) : (
+            <div className="space-y-2">
+              {schedules.map((sched) => (
+                <div key={sched._id} className="border border-borderColor rounded-xl p-3 bg-bgSurface flex justify-between items-center text-xs">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-textPrimary">{sched.time}</span>
+                      <span className="text-[10px] bg-slate-200 text-slate-700 font-semibold px-1.5 py-0.5 rounded">
+                        {sched.category}
+                      </span>
+                    </div>
+                    <p className="text-textSecondary font-medium text-[10px]">{sched.title}</p>
+                    <p className="text-textSecondary text-[9px]">Fee: 🪙 {sched.entryFee} | Prize: 🪙 {sched.prizePool} | Slots: {sched.totalSlots}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleToggleSchedule(sched)}
+                      className={`px-2 py-1 rounded text-[10px] font-bold ${
+                        sched.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
+                      }`}>
+                      {sched.enabled ? 'Enabled' : 'Disabled'}
+                    </button>
+                    <button onClick={() => startEditSchedule(sched)}
+                      className="px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded text-[10px]">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDeleteSchedule(sched._id)}
+                      className="px-2 py-1 bg-red-100 text-red-700 font-bold rounded text-[10px]">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div>
+        <p className="text-xs text-textSecondary font-bold mb-2">Hosted Matches ({hostedMatches.filter(m => (Date.now() - new Date(m.dateCreated || m.date).getTime()) <= 24 * 60 * 60 * 1000).length})</p>
         
         {loadingMatches ? (
-          <div className="text-center py-4 text-xs text-gray-400">Loading hosted matches...</div>
+          <div className="text-center py-4 text-xs text-textSecondary">Loading hosted matches...</div>
         ) : hostedMatches.length === 0 ? (
-          <div className="text-center py-4 text-xs text-gray-400">No matches hosted yet.</div>
+          <div className="text-center py-4 text-xs text-textSecondary">No matches hosted yet.</div>
         ) : (
           <div className="space-y-3">
-            {hostedMatches.map((match) => (
-              <div key={match._id} className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-3">
+            {hostedMatches.filter(m => (Date.now() - new Date(m.dateCreated || m.date).getTime()) <= 24 * 60 * 60 * 1000).map((match) => (
+              <div key={match._id} className="border border-borderColor rounded-xl p-3 bg-bgSurface space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] bg-[#132040]/10 text-[#132040] font-bold px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-bgSurface/10 text-[#132040] font-bold px-2 py-0.5 rounded-full">
                       {match.category}
                     </span>
-                    <h4 className="font-bold text-xs text-gray-800 mt-1">{match.title}</h4>
+                    <h4 className="font-bold text-xs text-textPrimary mt-1">{match.title}</h4>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] text-gray-400 font-mono">ID: {match.matchId}</span>
+                      <span className="text-[10px] text-textSecondary font-mono">ID: {match.matchId}</span>
                       <span className="text-[10px] text-gray-300">|</span>
                       <button onClick={() => setViewingPlayersMatch(match)}
                         className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded transition">
@@ -2365,7 +2660,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                           📢 Notice
                         </button>
                         <button onClick={() => startResolve(match)}
-                          className="flex-1 py-1.5 bg-[#132040] text-[#f5c518] font-bold rounded-lg text-[10px] hover:opacity-90">
+                          className="flex-1 py-1.5 bg-bgSurface text-[#f5c518] font-bold rounded-lg text-[10px] hover:opacity-90">
                           Resolve Match
                         </button>
                       </>
@@ -2383,15 +2678,15 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                 )}
 
                 {editingRoomId === match._id && (
-                  <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-2 mt-2">
+                  <div className="bg-bgSurface border border-borderColor rounded-lg p-3 space-y-2 mt-2">
                     <p className="text-[10px] font-bold text-gray-600">Set Room Credentials</p>
                     <div className="grid grid-cols-2 gap-2">
                       <input type="text" placeholder="Room ID" value={roomIdInput}
                         onChange={e => setRoomIdInput(e.target.value)}
-                        className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-gray-900" />
+                        className="border border-borderColor rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-textPrimary" />
                       <input type="text" placeholder="Password" value={roomPassInput}
                         onChange={e => setRoomPassInput(e.target.value)}
-                        className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-gray-900" />
+                        className="border border-borderColor rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-textPrimary" />
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => setEditingRoomId(null)}
@@ -2399,7 +2694,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                         Cancel
                       </button>
                       <button onClick={() => handleSaveRoom(match._id)}
-                        className="flex-1 py-1 bg-green-500 text-white font-bold rounded text-[10px]">
+                        className="flex-1 py-1 bg-green-500 text-textPrimary font-bold rounded text-[10px]">
                         Save
                       </button>
                     </div>
@@ -2407,18 +2702,18 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                 )}
 
                 {editingNoticeId === match._id && (
-                  <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-2 mt-2">
+                  <div className="bg-bgSurface border border-borderColor rounded-lg p-3 space-y-2 mt-2">
                     <p className="text-[10px] font-bold text-gray-600">📢 Edit Announcement Notice</p>
                     <input type="text" placeholder="Notice text (e.g. Delayed by 15 mins)" value={matchNoticeInput}
                       onChange={e => setMatchNoticeInput(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-gray-900" />
+                      className="w-full border border-borderColor rounded-lg px-2.5 py-1.5 text-xs focus:outline-none text-textPrimary" />
                     <div className="flex gap-2">
                       <button onClick={() => setEditingNoticeId(null)}
                         className="flex-1 py-1 border border-red-200 text-red-500 rounded text-[10px]">
                         Cancel
                       </button>
                       <button onClick={() => handleSaveNotice(match._id)}
-                        className="flex-1 py-1 bg-green-500 text-white font-bold rounded text-[10px]">
+                        className="flex-1 py-1 bg-green-500 text-textPrimary font-bold rounded text-[10px]">
                         Save Notice
                       </button>
                     </div>
@@ -2432,22 +2727,22 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
 
       {/* Pending Manual Deposits (Admin Only) */}
       {(user.role === 'admin' || user.role === 'finance_admin') && (
-        <div className="border-t pt-4 border-gray-100">
-          <p className="text-xs text-gray-500 font-bold mb-3">Pending Deposits ({pendingDeposits.length})</p>
+        <div className="border-t pt-4 border-borderColor">
+          <p className="text-xs text-textSecondary font-bold mb-3">Pending Deposits ({pendingDeposits.length})</p>
           {pendingDeposits.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-2 bg-gray-50 rounded-lg">No pending deposits.</p>
+            <p className="text-xs text-textSecondary text-center py-2 bg-bgPrimary rounded-lg">No pending deposits.</p>
           ) : (
             <div className="space-y-3">
               {pendingDeposits.map((dep) => (
                 <div key={dep._id} className="border border-yellow-200 bg-yellow-50/30 rounded-xl p-3 space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span className="font-bold text-gray-800">{dep.user?.username || 'Player'}</span>
-                    <span className="text-gray-500">{dep.user?.phone}</span>
+                    <span className="font-bold text-textPrimary">{dep.user?.username || 'Player'}</span>
+                    <span className="text-textSecondary">{dep.user?.phone}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <div>
                       <p className="text-gray-600 font-semibold">Amount: ₹{dep.amount}</p>
-                      <p className="text-[10px] text-gray-400 font-mono">UTR: {dep.utr}</p>
+                      <p className="text-[10px] text-textSecondary font-mono">UTR: {dep.utr}</p>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => handleResolveDeposit(dep._id, 'reject')}
@@ -2455,7 +2750,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                         Reject
                       </button>
                       <button onClick={() => handleResolveDeposit(dep._id, 'approve')}
-                        className="px-3 py-1.5 bg-green-500 text-white font-bold rounded-lg text-[10px]">
+                        className="px-3 py-1.5 bg-green-500 text-textPrimary font-bold rounded-lg text-[10px]">
                         Approve
                       </button>
                     </div>
@@ -2467,167 +2762,80 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
         </div>
       )}
 
-      {/* Pending Withdrawals (Admin Only) */}
-      {(user.role === 'admin' || user.role === 'finance_admin') && (
-        <div className="border-t pt-4 border-gray-100">
-          <p className="text-xs text-gray-500 font-bold mb-3">Pending Withdrawals ({pendingWithdrawals.length})</p>
-          {pendingWithdrawals.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-2 bg-gray-50 rounded-lg">No pending withdrawals.</p>
-          ) : (
-            <div className="space-y-3">
-              {pendingWithdrawals.map((wit) => (
-                <div key={wit._id} className="border border-orange-200 bg-orange-50/30 rounded-xl p-3 space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-bold text-gray-800">{wit.user?.username || 'Player'}</span>
-                    <span className="text-gray-500">{wit.user?.phone}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <div>
-                      <p className="text-gray-600 font-semibold">Amount: ₹{wit.amount}</p>
-                      <p className="text-[10px] text-gray-400 font-mono">UPI: {wit.upiId}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleResolveWithdrawal(wit._id, 'reject')}
-                        className="px-3 py-1.5 bg-red-100 text-red-700 font-bold rounded-lg text-[10px]">
-                        Reject
-                      </button>
-                      <button onClick={() => handleResolveWithdrawal(wit._id, 'approve')}
-                        className="px-3 py-1.5 bg-green-500 text-white font-bold rounded-lg text-[10px]">
-                        Approve
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Daily Schedule Builder (Admin Only) */}
-      {user.role === 'admin' && (
-        <div className="border-t pt-4 border-gray-100 space-y-3">
-          <div className="flex justify-between items-center">
-            <p className="text-xs text-gray-500 font-bold">📅 Daily Schedule Builder</p>
-            <button onClick={startAddSchedule}
-              className="bg-[#132040] text-[#f5c518] font-bold px-2.5 py-1 rounded text-[10px] hover:opacity-90 active:scale-95 transition">
-              + Add Slot
-            </button>
-          </div>
-
-          {loadingSchedules ? (
-            <p className="text-xs text-gray-400 text-center py-2">Loading schedule slots...</p>
-          ) : schedules.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-2 bg-gray-50 rounded-lg">No active schedules. Create one to auto-publish matches daily!</p>
-          ) : (
-            <div className="space-y-2">
-              {schedules.map((sched) => (
-                <div key={sched._id} className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 flex justify-between items-center text-xs">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-800">{sched.time}</span>
-                      <span className="text-[10px] bg-slate-200 text-slate-700 font-semibold px-1.5 py-0.5 rounded">
-                        {sched.category}
-                      </span>
-                    </div>
-                    <p className="text-gray-500 font-medium text-[10px]">{sched.title}</p>
-                    <p className="text-gray-400 text-[9px]">Fee: 🪙 {sched.entryFee} | Prize: 🪙 {sched.prizePool} | Slots: {sched.totalSlots}</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => handleToggleSchedule(sched)}
-                      className={`px-2 py-1 rounded text-[10px] font-bold ${
-                        sched.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
-                      }`}>
-                      {sched.enabled ? 'Enabled' : 'Disabled'}
-                    </button>
-                    <button onClick={() => startEditSchedule(sched)}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded text-[10px]">
-                      Edit
-                    </button>
-                    <button onClick={() => handleDeleteSchedule(sched._id)}
-                      className="px-2 py-1 bg-red-100 text-red-700 font-bold rounded text-[10px]">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Schedule Form Modal */}
+      {/* Schedule Form Modal */}
           {showScheduleForm && (
             <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl p-5 w-full max-w-sm max-h-[85vh] overflow-y-auto space-y-4">
+              <div className="bg-bgSurface rounded-2xl p-5 w-full max-w-sm max-h-[85vh] overflow-y-auto space-y-4">
                 <div className="flex justify-between items-center border-b pb-3">
                   <h3 className="font-bold text-sm text-[#132040]">
                     {editingSchedule ? 'Edit Schedule Slot' : 'Add Daily Schedule Slot'}
                   </h3>
-                  <button onClick={() => setShowScheduleForm(false)} className="text-gray-400 font-bold">✕</button>
+                  <button onClick={() => setShowScheduleForm(false)} className="text-textSecondary font-bold">✕</button>
                 </div>
 
                 <form onSubmit={handleSaveSchedule} className="space-y-3">
                   <div>
-                    <label className="text-[10px] text-gray-500 font-bold block mb-1">Time Slot (e.g. 06:00 AM, 10:30 PM)</label>
+                    <label className="text-[10px] text-textSecondary font-bold block mb-1">Time Slot (e.g. 06:00 AM, 10:30 PM)</label>
                     <input type="text" value={schedTime} onChange={e => setSchedTime(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" required />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-gray-500 font-bold block mb-1">Category</label>
+                    <label className="text-[10px] text-textSecondary font-bold block mb-1">Category</label>
                     <select value={schedCategory} onChange={e => setSchedCategory(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]">
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]">
                       {GAME_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-gray-500 font-bold block mb-1">Match Title</label>
+                    <label className="text-[10px] text-textSecondary font-bold block mb-1">Match Title</label>
                     <input type="text" value={schedTitle} onChange={e => setSchedTitle(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" required />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-gray-500 font-bold block mb-1">Entry Fee (🪙)</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Entry Fee (🪙)</label>
                       <input type="number" value={schedEntryFee} onChange={e => setSchedEntryFee(e.target.value)}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" required />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-500 font-bold block mb-1">Prize Pool (🪙)</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Prize Pool (🪙)</label>
                       <input type="number" value={schedPrizePool} onChange={e => setSchedPrizePool(e.target.value)}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" required />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-gray-500 font-bold block mb-1">Per Kill (🪙)</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Per Kill (🪙)</label>
                       <input type="number" value={schedPerKill} onChange={e => setSchedPerKill(e.target.value)}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" />
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-500 font-bold block mb-1">Total Slots</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Total Slots</label>
                       <input type="number" value={schedTotalSlots} onChange={e => setSchedTotalSlots(e.target.value)}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" required />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-gray-500 font-bold block mb-1">Rules (one per line)</label>
+                    <label className="text-[10px] text-textSecondary font-bold block mb-1">Rules (one per line)</label>
                     <textarea rows={3} value={schedRules} onChange={e => setSchedRules(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518] resize-none" placeholder="No emulator allowed..." />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518] resize-none" placeholder="No emulator allowed..." />
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-gray-500 font-bold block mb-1">Announcement Notice (Optional)</label>
+                    <label className="text-[10px] text-textSecondary font-bold block mb-1">Announcement Notice (Optional)</label>
                     <input type="text" value={schedNotice} onChange={e => setSchedNotice(e.target.value)}
                       placeholder="e.g. Delayed by 10 mins or Map changes"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" />
                   </div>
 
                   <button type="submit"
-                    className="w-full bg-[#132040] text-[#f5c518] font-bold py-3 rounded-xl text-xs tracking-wider">
+                    className="w-full bg-bgSurface text-[#f5c518] font-bold py-3 rounded-xl text-xs tracking-wider">
                     {editingSchedule ? 'UPDATE SCHEDULE' : 'SAVE SCHEDULE'}
                   </button>
                 </form>
@@ -2639,34 +2847,34 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
 
       {/* Host Management (Admin Only) */}
       {(user.role === 'admin' || user.role === 'finance_admin') && (
-        <div className="border-t pt-4 border-gray-100 space-y-3">
-          <p className="text-xs text-gray-500 font-bold">👥 Host Management</p>
+        <div className="border-t pt-4 border-borderColor space-y-3">
+          <p className="text-xs text-textSecondary font-bold">👥 Host Management</p>
           
           <div className="flex gap-2">
             <input type="text" placeholder="Search user by Phone or Username" value={usersSearch}
               onChange={e => setUsersSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearchUsers()}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518]" />
+              className="flex-1 border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" />
             <button onClick={handleSearchUsers} disabled={searchingUsers}
-              className="bg-[#132040] text-[#f5c518] font-bold px-3 py-2 rounded-xl text-xs hover:opacity-90 active:scale-95 transition">
+              className="bg-bgSurface text-[#f5c518] font-bold px-3 py-2 rounded-xl text-xs hover:opacity-90 active:scale-95 transition">
               {searchingUsers ? 'Searching...' : 'Search'}
             </button>
           </div>
 
           {searchedUsers.length > 0 && (
-            <div className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-2 max-h-[40vh] overflow-y-auto">
+            <div className="border border-borderColor rounded-xl p-3 bg-bgSurface space-y-2 max-h-[40vh] overflow-y-auto">
               {searchedUsers.map(u => (
-                <div key={u._id} className="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-b-0">
+                <div key={u._id} className="flex justify-between items-center text-xs py-1.5 border-b border-borderColor last:border-b-0">
                   <div>
-                    <p className="font-bold text-gray-800">{u.username}</p>
-                    <p className="text-[10px] text-gray-400 font-mono">Phone: {u.phone} | Role: <span className="font-bold text-[#132040]">{u.role}</span></p>
+                    <p className="font-bold text-textPrimary">{u.username}</p>
+                    <p className="text-[10px] text-textSecondary font-mono">Phone: {u.phone} | Role: <span className="font-bold text-[#132040]">{u.role}</span></p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => handleToggleHostRole(u)} disabled={updatingRole === u._id}
                       className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 ${
                         u.role === 'host' 
                           ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                          : 'bg-green-500 text-white hover:bg-green-600'
+                          : 'bg-green-500 text-textPrimary hover:bg-green-600'
                       }`}>
                       {updatingRole === u._id ? 'Updating...' : u.role === 'host' ? 'Remove Host' : 'Make Host'}
                     </button>
@@ -2675,7 +2883,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                         className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 ${
                           u.isBanned 
                             ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                            : 'bg-black text-white hover:bg-gray-800'
+                            : 'bg-black text-textPrimary hover:bg-bgSurface'
                         }`}>
                         {u.isBanned ? 'Unban' : 'Ban'}
                       </button>
@@ -2689,22 +2897,22 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
       )}
       {/* Announcements (Admin & Finance Admin) */}
       {(user.role === 'admin' || user.role === 'finance_admin') && (
-        <div className="border-t pt-4 border-gray-100 space-y-3">
-          <p className="text-xs text-gray-500 font-bold">📢 App Announcements</p>
+        <div className="border-t pt-4 border-borderColor space-y-3">
+          <p className="text-xs text-textSecondary font-bold">📢 App Announcements</p>
           <textarea
             value={announcementMsg}
             onChange={e => setAnnouncementMsg(e.target.value)}
             rows={2}
             placeholder="Write announcement message..."
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#f5c518] resize-none"
+            className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518] resize-none"
           />
           <div className="flex gap-2">
             <button onClick={handleAnnounceInApp}
-              className="flex-1 bg-[#132040] text-[#f5c518] font-bold py-2 rounded-xl text-xs hover:opacity-90 active:scale-95 transition">
+              className="flex-1 bg-bgSurface text-[#f5c518] font-bold py-2 rounded-xl text-xs hover:opacity-90 active:scale-95 transition">
               Announce In-App
             </button>
             <button onClick={handleAnnouncePush}
-              className="flex-1 bg-red-600 text-white font-bold py-2 rounded-xl text-xs hover:bg-red-700 active:scale-95 transition">
+              className="flex-1 bg-red-600 text-textPrimary font-bold py-2 rounded-xl text-xs hover:bg-red-700 active:scale-95 transition">
               Push Notification
             </button>
           </div>
@@ -2713,23 +2921,25 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
 
       {/* Dynamic Category Banners (First Admin Only) */}
       {user.phone === '7017022966' && (
-        <div className="border-t pt-4 border-gray-100 space-y-3">
+        <div className="border-t pt-4 border-borderColor space-y-3">
           <div className="flex justify-between items-center">
-            <p className="text-xs text-gray-500 font-bold">🎨 Dynamic Category Banners</p>
+            <p className="text-xs text-textSecondary font-bold">🎨 Dynamic Category Banners</p>
             <button onClick={handleSaveBanners} disabled={savingBanners}
-              className="bg-[#132040] text-[#f5c518] font-bold px-3 py-1.5 rounded-xl text-[10px] hover:opacity-90 active:scale-95 transition">
+              className="bg-bgSurface text-[#f5c518] font-bold px-3 py-1.5 rounded-xl text-[10px] hover:opacity-90 active:scale-95 transition">
               {savingBanners ? 'Saving...' : 'Save Banners'}
             </button>
           </div>
-          <p className="text-[10px] text-gray-400 leading-tight">Paste an image URL for any category. Leave blank to use default. This changes the image everywhere.</p>
+          <p className="text-[10px] text-textSecondary leading-tight">Paste an image URL for any category. Leave blank to use default. This changes the image everywhere.</p>
           <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
             {GAME_CATEGORIES.map(cat => (
-              <div key={cat.id} className="flex flex-col gap-1 border border-gray-100 p-2 rounded-xl bg-gray-50/50">
+              <div key={cat.id} className="flex flex-col gap-1 border border-borderColor p-2 rounded-xl bg-bgSurface">
                 <label className="text-[10px] font-bold text-gray-700">{cat.label}</label>
-                <input type="text" placeholder="https://example.com/image.png"
-                  value={draftBanners[cat.id] || ''}
-                  onChange={(e) => setDraftBanners({ ...draftBanners, [cat.id]: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#f5c518]" />
+                <div className="flex items-center gap-2">
+                    <input type="file" accept="image/*"
+                      onChange={(e) => handleFileUpload(e, (url) => setDraftBanners({ ...draftBanners, [cat.id]: url }))}
+                      className="w-full border border-borderColor rounded-lg px-2 py-1.5 text-xs bg-bgSurface" />
+                    {draftBanners[cat.id] && <img src={draftBanners[cat.id]} alt="banner" className="w-10 h-10 object-cover rounded" />}
+                  </div>
               </div>
             ))}
           </div>
@@ -2738,40 +2948,40 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
 
       {resolvingMatch && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-4">
+          <div className="bg-bgSurface rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <div>
                 <h3 className="font-bold text-sm text-[#132040]">Resolve: {resolvingMatch.title}</h3>
-                <p className="text-[10px] text-gray-400">{resolvingMatch.matchId}</p>
+                <p className="text-[10px] text-textSecondary">{resolvingMatch.matchId}</p>
               </div>
-              <button onClick={() => setResolvingMatch(null)} className="text-gray-400 font-bold">✕</button>
+              <button onClick={() => setResolvingMatch(null)} className="text-textSecondary font-bold">✕</button>
             </div>
 
             <div className="space-y-3">
               <p className="text-xs font-bold text-gray-600">Enter Standings for Joined Players</p>
               
               {playerStandings.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">No players joined this match.</p>
+                <p className="text-xs text-textSecondary text-center py-4">No players joined this match.</p>
               ) : (
                 <div className="space-y-3 max-h-[45vh] overflow-y-auto pr-1">
                   {playerStandings.map((p, idx) => (
-                    <div key={idx} className="border border-gray-100 rounded-xl p-3 bg-gray-50/50 space-y-2">
+                    <div key={idx} className="border border-borderColor rounded-xl p-3 bg-bgSurface space-y-2">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-semibold text-gray-800">{p.name || 'Anonymous'}</span>
-                        <span className="text-[10px] text-gray-400">UID: {p.uid}</span>
+                        <span className="font-semibold text-textPrimary">{p.name || 'Anonymous'}</span>
+                        <span className="text-[10px] text-textSecondary">UID: {p.uid}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[9px] text-gray-500 font-medium block mb-0.5">Kills</label>
+                          <label className="text-[9px] text-textSecondary font-medium block mb-0.5">Kills</label>
                           <input type="number" min="0" value={p.kills}
                             onChange={e => handleUpdateStanding(idx, 'kills', e.target.value)}
-                            className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-900" />
+                            className="w-full border border-borderColor rounded-lg px-2 py-1 text-xs text-textPrimary" />
                         </div>
                         <div>
-                          <label className="text-[9px] text-gray-500 font-medium block mb-0.5">Rank (1 for winner)</label>
+                          <label className="text-[9px] text-textSecondary font-medium block mb-0.5">Rank (1 for winner)</label>
                           <input type="number" min="1" value={p.rank}
                             onChange={e => handleUpdateStanding(idx, 'rank', e.target.value)}
-                            className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-900" />
+                            className="w-full border border-borderColor rounded-lg px-2 py-1 text-xs text-textPrimary" />
                         </div>
                       </div>
                     </div>
@@ -2786,7 +2996,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                 Cancel
               </button>
               <button onClick={handleResolveSubmit} disabled={resolvingSubmitLoading}
-                className="flex-1 py-3 bg-green-500 text-white font-bold rounded-xl text-xs hover:bg-green-600 active:scale-95 transition">
+                className="flex-1 py-3 bg-green-500 text-textPrimary font-bold rounded-xl text-xs hover:bg-green-600 active:scale-95 transition">
                 {resolvingSubmitLoading ? 'Resolving Standings...' : 'Disburse Prize & Finish'}
               </button>
             </div>
@@ -2796,27 +3006,27 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
 
       {viewingPlayersMatch && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm max-h-[80vh] overflow-y-auto space-y-4">
+          <div className="bg-bgSurface rounded-2xl p-5 w-full max-w-sm max-h-[80vh] overflow-y-auto space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <div>
                 <h3 className="font-bold text-sm text-[#132040]">Joined Players</h3>
-                <p className="text-[10px] text-gray-400">{viewingPlayersMatch.title} – {viewingPlayersMatch.matchId}</p>
+                <p className="text-[10px] text-textSecondary">{viewingPlayersMatch.title} – {viewingPlayersMatch.matchId}</p>
               </div>
-              <button onClick={() => setViewingPlayersMatch(null)} className="text-gray-400 font-bold">✕</button>
+              <button onClick={() => setViewingPlayersMatch(null)} className="text-textSecondary font-bold">✕</button>
             </div>
 
             <div className="space-y-2">
               {!viewingPlayersMatch.joinedPlayers || viewingPlayersMatch.joinedPlayers.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-6">No players have joined this match yet.</p>
+                <p className="text-xs text-textSecondary text-center py-6">No players have joined this match yet.</p>
               ) : (
                 <div className="divide-y divide-gray-100 max-h-[50vh] overflow-y-auto pr-1">
                   {viewingPlayersMatch.joinedPlayers.map((p: any, idx: number) => (
                     <div key={idx} className="py-2.5 flex justify-between items-center text-xs">
                       <div>
-                        <p className="font-bold text-gray-800">{p.name || p.user?.username || 'Player'}</p>
-                        <p className="text-[10px] text-gray-500 font-mono">UID: {p.uid || p.user?.ffUid || '--'}</p>
+                        <p className="font-bold text-textPrimary">{p.name || p.user?.username || 'Player'}</p>
+                        <p className="text-[10px] text-textSecondary font-mono">UID: {p.uid || p.user?.ffUid || '--'}</p>
                       </div>
-                      <div className="text-right text-[10px] text-gray-400">
+                      <div className="text-right text-[10px] text-textSecondary">
                         <p>Team: {p.teamNo || idx + 1}</p>
                         <p>Pos: {p.position || 'A'}</p>
                       </div>
@@ -2827,7 +3037,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
             </div>
             
             <button onClick={() => setViewingPlayersMatch(null)}
-              className="w-full py-3 bg-[#132040] text-white font-bold rounded-xl text-xs">
+              className="w-full py-3 bg-bgSurface text-textPrimary font-bold rounded-xl text-xs">
               Close
             </button>
           </div>

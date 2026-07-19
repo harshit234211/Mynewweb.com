@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Orbitron, Rajdhani } from 'next/font/google';
 import './globals.css';
+import { ThemeProvider } from './theme-provider';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -60,8 +61,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="bg-darkBg text-slate-100 antialiased selection:bg-neonRed selection:text-white">
-        {children}
+      <body className="bg-bgPrimary text-textPrimary antialiased selection:bg-accentRed selection:text-white transition-colors duration-300">
+        <ThemeProvider attribute="class" defaultTheme="dark">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

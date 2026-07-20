@@ -1704,8 +1704,12 @@ export default function Home() {
               .reduce((acc: any[], p: any) => {
                 const name = p.name || p.user?.username || 'Unknown';
                 const ex = acc.find(a => a.name === name);
-                if (ex) { ex.kills += p.kills || 0; ex.wins += p.rank === 1 ? 1 : 0; }
-                else acc.push({ name, kills: p.kills || 0, wins: p.rank === 1 ? 1 : 0 });
+                if (ex) { 
+                  ex.kills += p.kills || 0; 
+                  ex.wins += p.rank === 1 ? 1 : 0; 
+                  ex.prize += p.prize || 0;
+                }
+                else acc.push({ name, kills: p.kills || 0, wins: p.rank === 1 ? 1 : 0, prize: p.prize || 0 });
                 return acc;
               }, [])
               .sort((a, b) => b.kills - a.kills)
@@ -1719,9 +1723,9 @@ export default function Home() {
                     <User className="w-4 h-4 text-textPrimary" />
                   </div>
                   <p className="flex-1 font-semibold text-sm text-textPrimary">{player.name}</p>
-                  <div className="text-right">
-                    <p className="text-xs text-textSecondary">Kills: <span className="font-bold text-red-500">{player.kills}</span></p>
-                    <p className="text-xs text-textSecondary">Wins: <span className="font-bold text-yellow-500">{player.wins}</span></p>
+                  <div className="text-right flex flex-col items-end gap-0.5">
+                    <span className="text-[10px] font-black text-green-500 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">₹{player.prize || 0} WON</span>
+                    <span className="text-[10px] text-textSecondary font-bold">{player.kills} KILLS • {player.wins} WINS</span>
                   </div>
                 </div>
               ))}

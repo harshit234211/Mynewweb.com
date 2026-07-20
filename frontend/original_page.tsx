@@ -10,7 +10,7 @@ import {
   Clock, User, LogOut, Plus,
   CheckCircle, XCircle, RefreshCw,
   TrendingUp, Gift, Sun, Moon, Coins,
-  Eye, EyeOff, Facebook, Twitter, Mail, Instagram, MessageCircle, Send
+  Eye, EyeOff, Facebook, Twitter, Mail
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -1418,62 +1418,62 @@ export default function Home() {
         {/* Create Match Modal */}
         <AnimatePresence>
           {showCreateMatch && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
-            <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-              <button onClick={() => setShowCreateMatch(false)} className="text-textPrimary">
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Create New Match</h2>
-              <div className="w-6" />
-            </div>
-            <div className="p-4 mt-2">
-              <form onSubmit={handleCreateMatch} className="space-y-4">
-                <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
-                <select className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
-                  {GAME_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                </select>
-                <div className="grid grid-cols-2 gap-3">
-                  <input className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Date (YYYY-MM-DD)" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required />
-                  <input className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Time (09:00 AM)" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-end">
+              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                className="w-full bg-bgSurface rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-lg text-[#132040]">Create New Match</h3>
+                  <button onClick={() => setShowCreateMatch(false)} className="text-textSecondary">
+                    <XCircle className="w-6 h-6" />
+                  </button>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Entry Fee" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: e.target.value})} required />
-                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Prize Pool" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: e.target.value})} required />
-                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Per Kill" value={newMatch.perKill} onChange={e => setNewMatch({...newMatch, perKill: e.target.value})} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Total Slots" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: e.target.value})} required />
-                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})}>
-                    <option>Bermuda</option><option>Kalahari</option><option>Purgatory</option><option>Alpine</option>
+                <form onSubmit={handleCreateMatch} className="space-y-4">
+                  <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
+                  <select className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
+                    {GAME_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.teamType} onChange={e => setNewMatch({...newMatch, teamType: e.target.value})}>
-                    <option>Solo</option><option>Duo</option><option>Squad</option>
-                  </select>
-                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.mode} onChange={e => setNewMatch({...newMatch, mode: e.target.value})}>
-                    <option>Solo</option><option>1v1</option><option>2v2</option><option>4v4</option>
-                  </select>
-                  <select className="border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.matchType} onChange={e => setNewMatch({...newMatch, matchType: e.target.value})}>
-                    <option>Paid</option><option>Free</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-textSecondary mb-1 block">Prize Distribution</label>
-                  <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.prizeDistribution} onChange={e => setNewMatch({...newMatch, prizeDistribution: e.target.value})} />
-                </div>
-                <div>
-                  <label className="text-xs text-textSecondary mb-1 block">Rules (one per line)</label>
-                  <textarea rows={4} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm resize-none" value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
-                </div>
-                <button type="submit" className="w-full bg-[#f5c518] text-[#132040] font-black py-4 rounded-xl text-sm tracking-widest shadow-lg mt-6">
-                  CREATE MATCH
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <input className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Date (YYYY-MM-DD)" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required />
+                    <input className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Time (HH:MM AM/PM)" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Entry Fee" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: e.target.value})} required />
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Prize Pool" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: e.target.value})} required />
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Per Kill" value={newMatch.perKill} onChange={e => setNewMatch({...newMatch, perKill: e.target.value})} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input type="number" className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" placeholder="Total Slots" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: e.target.value})} required />
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})}>
+                      <option>Bermuda</option><option>Kalahari</option><option>Purgatory</option><option>Alpine</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.teamType} onChange={e => setNewMatch({...newMatch, teamType: e.target.value})}>
+                      <option>Solo</option><option>Duo</option><option>Squad</option>
+                    </select>
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.mode} onChange={e => setNewMatch({...newMatch, mode: e.target.value})}>
+                      <option>Solo</option><option>1v1</option><option>2v2</option><option>4v4</option>
+                    </select>
+                    <select className="border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary bg-bgSurface" value={newMatch.matchType} onChange={e => setNewMatch({...newMatch, matchType: e.target.value})}>
+                      <option>Paid</option><option>Free</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-textSecondary mb-1 block">Prize Distribution (format: 1st:55,2nd:40,...)</label>
+                    <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary" value={newMatch.prizeDistribution} onChange={e => setNewMatch({...newMatch, prizeDistribution: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-textSecondary mb-1 block">Rules (one per line)</label>
+                    <textarea rows={4} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm resize-none text-textPrimary" placeholder="Room Entry Recording is compulsory..." value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
+                  </div>
+                  <button type="submit" className="w-full bg-bgSurface text-[#f5c518] font-bold py-4 rounded-xl text-sm tracking-widest">
+                    CREATE MATCH
+                  </button>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     );
@@ -1761,82 +1761,74 @@ export default function Home() {
           <AnimatePresence>
             {showDepositQR && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
-                <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-                  <button onClick={() => setShowDepositQR(false)} className="text-textPrimary">
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Scan & Pay</h2>
-                  <div className="w-6" />
-                </div>
-                
-                <div className="p-4 mt-6 text-center max-w-sm mx-auto">
-                  <p className="text-textSecondary text-sm mb-4 font-bold">Pay ₹{depositAmt} via UPI</p>
-                  <div className="bg-white p-4 rounded-xl border-2 border-[#f5c518] w-48 h-48 mx-auto mb-6 shadow-sm">
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center px-4">
+                <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+                  className="bg-bgSurface rounded-2xl p-6 w-full max-w-sm text-center">
+                  <h3 className="font-bold text-lg text-[#132040] mb-2">Scan & Pay</h3>
+                  <p className="text-textSecondary text-xs mb-4">Pay ₹{depositAmt} via UPI</p>
+                  <div className="bg-bgSurface p-3 rounded-xl border-2 border-[#f5c518] w-44 h-44 mx-auto mb-4">
                     <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=7017022966@ibl%26pn=FragArena%26am=${depositAmt}%26cu=INR`}
                       alt="UPI QR" className="w-full h-full object-contain" />
                   </div>
-                  <p className="text-sm text-textSecondary mb-6 font-semibold">Scan with GPay, PhonePe, Paytm</p>
+                  <p className="text-xs text-textSecondary mb-4">Scan with GPay, PhonePe, Paytm</p>
                   <input type="text" placeholder="Enter UTR / Transaction ID" value={depositUtr}
                     onChange={e => setDepositUtr(e.target.value)}
-                    className="w-full border border-borderColor rounded-xl px-4 py-4 text-sm focus:outline-none focus:border-[#f5c518] mb-6 text-center text-textPrimary font-bold" />
-                  
-                  <button onClick={handleVerifyDeposit}
-                    className="w-full py-4 bg-[#f5c518] text-[#132040] font-black rounded-xl text-sm tracking-widest shadow-lg hover:bg-yellow-400 transition active:scale-95">
-                    SUBMIT UTR
-                  </button>
-                </div>
+                    className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f5c518] mb-4 text-center text-textPrimary font-semibold" />
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowDepositQR(false)}
+                      className="flex-1 py-3 border border-red-200 text-red-500 font-bold rounded-xl text-sm">Cancel</button>
+                    <button onClick={handleVerifyDeposit}
+                      className="flex-1 py-3 bg-bgSurface text-[#f5c518] font-bold rounded-xl text-sm">Submit UTR</button>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
 
             {successWithdrawal && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
-                <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-                  <button onClick={() => setSuccessWithdrawal(null)} className="text-textPrimary">
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Request Submitted</h2>
-                  <div className="w-6" />
-                </div>
-
-                <div className="p-4 mt-6 max-w-sm mx-auto text-center space-y-6">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
-                    <CheckCircle className="w-10 h-10" />
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center px-4">
+                <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+                  className="bg-bgSurface rounded-2xl p-6 w-full max-w-sm text-center space-y-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600 text-2xl">
+                    ✅
                   </div>
                   
                   <div>
-                    <h3 className="font-black text-xl text-[#132040]">Request Submitted!</h3>
-                    <p className="text-textSecondary text-sm mt-2">Your withdrawal request has been registered.</p>
+                    <h3 className="font-bold text-lg text-[#132040]">Request Submitted!</h3>
+                    <p className="text-textSecondary text-xs mt-1">Your withdrawal request has been registered.</p>
                   </div>
 
-                  <div className="bg-bgPrimary rounded-xl p-5 border border-borderColor space-y-4 text-left shadow-sm">
+                  <div className="bg-bgPrimary rounded-xl p-4 border border-borderColor space-y-2 text-left">
                     <div>
-                      <p className="text-textSecondary text-xs uppercase font-bold tracking-wider">Request ID</p>
-                      <p className="text-textPrimary font-mono font-black text-base tracking-wider select-all mt-1">{successWithdrawal.txId}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold">Request ID</p>
+                      <p className="text-textPrimary font-mono font-bold text-sm tracking-wider select-all">{successWithdrawal.txId}</p>
                     </div>
-                    <div className="h-px bg-borderColor w-full my-2"></div>
                     <div>
-                      <p className="text-textSecondary text-xs uppercase font-bold tracking-wider">Amount</p>
-                      <p className="text-green-600 font-black text-2xl mt-1">₹{successWithdrawal.amount}</p>
+                      <p className="text-textSecondary text-[10px] uppercase font-bold">Amount</p>
+                      <p className="text-green-600 font-black text-base">₹{successWithdrawal.amount}</p>
                     </div>
                   </div>
 
-                  <div className="text-xs text-yellow-700 font-bold bg-yellow-50 rounded-xl p-4 border border-yellow-100 text-left leading-relaxed">
+                  <div className="text-xs text-yellow-600 font-bold bg-yellow-50 rounded-xl p-3 border border-yellow-100 text-left leading-relaxed">
                     ⚠️ <b>Important Notice:</b> Copy your Request ID and send it to Customer Care on WhatsApp to get instant verification and approval!
                   </div>
 
-                  <div className="pt-4">
+                  <div className="space-y-2">
                     <button onClick={() => {
                       navigator.clipboard.writeText(successWithdrawal.txId);
                       const textMsg = encodeURIComponent(`Hello Admin, I have submitted a withdrawal request of ₹${successWithdrawal.amount}. My Request ID is: ${successWithdrawal.txId}. Please approve it.`);
                       window.open(`https://api.whatsapp.com/send?phone=917017022966&text=${textMsg}`, '_blank');
                     }}
-                      className="w-full bg-[#25D366] text-white font-black py-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-[#128C7E] active:scale-95 transition tracking-widest">
-                      SEND ID TO WHATSAPP
+                      className="w-full bg-green-500 text-textPrimary font-bold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow hover:bg-green-600 active:scale-95 transition">
+                      💬 Send Request ID to WhatsApp
+                    </button>
+
+                    <button onClick={() => setSuccessWithdrawal(null)}
+                      className="w-full py-2.5 text-textSecondary font-bold text-xs hover:underline">
+                      Close
                     </button>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1881,47 +1873,13 @@ export default function Home() {
               <p className="text-3xl font-black text-white tracking-widest">{user?.username}</p>
             </div>
 
-            <div className="grid grid-cols-5 gap-3 relative z-10">
-              <button onClick={() => {
-                const inviteText = encodeURIComponent(`Hey! Play Free Fire matches on FragArena & earn real cash! 🏆\n\nRegister using my Referral Code: ${user?.username} to get 10 Welcome Bonus Coins instantly!\n\nDownload/Join App here: ${window.location.origin}`);
-                window.open(`https://api.whatsapp.com/send?text=${inviteText}`, '_blank');
-              }} className="flex flex-col items-center justify-center gap-2 p-3 bg-[#25D366] text-white rounded-2xl shadow-lg active:scale-95 transition border border-[#1DA851]">
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-[9px] font-black tracking-widest uppercase mt-1">WP</span>
-              </button>
-
-              <button onClick={() => {
-                const inviteText = `Hey! Play Free Fire matches on FragArena & earn real cash! 🏆\n\nRegister using my Referral Code: ${user?.username} to get 10 Welcome Bonus Coins instantly!\n\nDownload/Join App here: ${window.location.origin}`;
-                navigator.clipboard.writeText(inviteText);
-                alert("Referral message copied! You can now paste it in Instagram DMs.");
-              }} className="flex flex-col items-center justify-center gap-2 p-3 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white rounded-2xl shadow-lg active:scale-95 transition">
-                <Instagram className="w-5 h-5" />
-                <span className="text-[9px] font-black tracking-widest uppercase mt-1">Insta</span>
-              </button>
-
-              <button onClick={() => {
-                const inviteText = encodeURIComponent(`Hey! Play Free Fire matches on FragArena & earn real cash! 🏆\n\nRegister using my Referral Code: ${user?.username} to get 10 Welcome Bonus Coins instantly!`);
-                window.open(`https://twitter.com/intent/tweet?text=${inviteText}&url=${encodeURIComponent(window.location.origin)}`, '_blank');
-              }} className="flex flex-col items-center justify-center gap-2 p-3 bg-black text-white rounded-2xl shadow-lg border border-gray-700 active:scale-95 transition">
-                <Twitter className="w-5 h-5" />
-                <span className="text-[9px] font-black tracking-widest uppercase mt-1">X</span>
-              </button>
-
-              <button onClick={() => {
-                const inviteText = encodeURIComponent(`Hey! Play Free Fire matches on FragArena & earn real cash! 🏆\n\nRegister using my Referral Code: ${user?.username} to get 10 Welcome Bonus Coins instantly!`);
-                window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${inviteText}`, '_blank');
-              }} className="flex flex-col items-center justify-center gap-2 p-3 bg-[#0088cc] text-white rounded-2xl shadow-lg active:scale-95 transition border border-[#006699]">
-                <Send className="w-5 h-5" />
-                <span className="text-[9px] font-black tracking-widest uppercase mt-1">TG</span>
-              </button>
-
-              <button onClick={() => {
-                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}`, '_blank');
-              }} className="flex flex-col items-center justify-center gap-2 p-3 bg-[#1877F2] text-white rounded-2xl shadow-lg active:scale-95 transition border border-[#155DBA]">
-                <Facebook className="w-5 h-5" />
-                <span className="text-[9px] font-black tracking-widest uppercase mt-1">FB</span>
-              </button>
-            </div>
+            <button onClick={() => {
+              const inviteText = encodeURIComponent(`Hey! Play Free Fire matches on FragArena & earn real cash! 🎮💸\n\nRegister using my Referral Code: ${user?.username} to get 10 Welcome Bonus Coins instantly!\n\nDownload/Join App here: ${window.location.origin}`);
+              window.open(`https://api.whatsapp.com/send?text=${inviteText}`, '_blank');
+            }} className="w-full bg-[#f5c518] hover:bg-yellow-400 text-[#132040] font-black py-4 rounded-2xl tracking-wide shadow-lg transition active:scale-95 relative z-10 flex items-center justify-center gap-2">
+              <Gift className="w-5 h-5" />
+              INVITE VIA WHATSAPP
+            </button>
           </div>
         </div>
       )}
@@ -2070,34 +2028,29 @@ export default function Home() {
 
       {/* Profile Modal */}
       {showProfileModal && (
-        <div className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
-          <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-            <button onClick={() => setShowProfileModal(false)} className="text-textPrimary">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Edit Profile</h2>
-            <div className="w-6" />
-          </div>
-          <div className="p-4 mt-2">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-bgSurface rounded-2xl w-full max-w-sm p-6 relative">
+            <h3 className="font-black text-[#042e5a] text-lg mb-4">Edit Profile</h3>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-textSecondary ml-1">Username</label>
-                <input required value={profileForm.username} onChange={e => setProfileForm({...profileForm, username: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#042e5a]" />
+                <input required value={profileForm.username} onChange={e => setProfileForm({...profileForm, username: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#042e5a]" />
               </div>
               <div>
                 <label className="text-xs font-bold text-textSecondary ml-1">Phone Number</label>
-                <input required value={profileForm.phone} onChange={e => setProfileForm({...profileForm, phone: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#042e5a]" />
+                <input required value={profileForm.phone} onChange={e => setProfileForm({...profileForm, phone: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#042e5a]" />
               </div>
               <div>
                 <label className="text-xs font-bold text-textSecondary ml-1">Free Fire UID</label>
-                <input value={profileForm.ffUid} onChange={e => setProfileForm({...profileForm, ffUid: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#042e5a]" />
+                <input value={profileForm.ffUid} onChange={e => setProfileForm({...profileForm, ffUid: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#042e5a]" />
               </div>
               <div>
                 <label className="text-xs font-bold text-textSecondary ml-1">Free Fire Name</label>
-                <input value={profileForm.ffName} onChange={e => setProfileForm({...profileForm, ffName: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#042e5a]" />
+                <input value={profileForm.ffName} onChange={e => setProfileForm({...profileForm, ffName: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#042e5a]" />
               </div>
-              <div className="pt-2 mt-4">
-                <button type="submit" className="w-full py-4 font-black tracking-widest text-white bg-[#042e5a] rounded-xl shadow-lg active:scale-95 transition">SAVE PROFILE</button>
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 py-3 font-bold text-gray-500 bg-gray-100 rounded-xl">Cancel</button>
+                <button type="submit" className="flex-1 py-3 font-bold text-white bg-[#042e5a] rounded-xl">Save</button>
               </div>
             </form>
           </div>
@@ -2106,26 +2059,21 @@ export default function Home() {
 
       {/* Password Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
-          <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-            <button onClick={() => setShowPasswordModal(false)} className="text-textPrimary">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Change Password</h2>
-            <div className="w-6" />
-          </div>
-          <div className="p-4 mt-2">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-bgSurface rounded-2xl w-full max-w-sm p-6 relative">
+            <h3 className="font-black text-[#042e5a] text-lg mb-4">Change Password</h3>
             <form onSubmit={handleUserChangePassword} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-textSecondary ml-1">Old Password</label>
-                <input type="password" required value={passwordForm.oldPassword} onChange={e => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#042e5a]" />
+                <input type="password" required value={passwordForm.oldPassword} onChange={e => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#042e5a]" />
               </div>
               <div>
                 <label className="text-xs font-bold text-textSecondary ml-1">New Password</label>
-                <input type="password" required value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#042e5a]" />
+                <input type="password" required value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="w-full border border-borderColor rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#042e5a]" />
               </div>
-              <div className="pt-2 mt-4">
-                <button type="submit" className="w-full py-4 font-black tracking-widest text-white bg-[#042e5a] rounded-xl shadow-lg active:scale-95 transition">UPDATE PASSWORD</button>
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 py-3 font-bold text-gray-500 bg-gray-100 rounded-xl">Cancel</button>
+                <button type="submit" className="flex-1 py-3 font-bold text-white bg-[#042e5a] rounded-xl">Update</button>
               </div>
             </form>
           </div>
@@ -2134,51 +2082,40 @@ export default function Home() {
 
       {/* Stats Modal */}
       {showStatsModal && (
-        <div className="fixed inset-0 bg-[#f0f2f5] z-50 overflow-y-auto pb-24">
-          <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-            <button onClick={() => setShowStatsModal(false)} className="text-textPrimary">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <h2 className="text-textPrimary font-bold text-base flex-1 text-center">My Statistics</h2>
-            <div className="w-6" />
-          </div>
-          <div className="p-4 mt-2">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-bgSurface rounded-2xl w-full max-w-sm p-6 relative">
+            <h3 className="font-black text-[#042e5a] text-lg mb-4">My Statistics</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-50 rounded-xl p-6 text-center border border-blue-100 shadow-sm">
-                <p className="text-blue-900 font-black text-3xl">{user.stats?.matches || 0}</p>
-                <p className="text-[10px] text-blue-700 font-bold uppercase mt-2">Matches Played</p>
+              <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+                <p className="text-blue-900 font-black text-2xl">{user.stats?.matches || 0}</p>
+                <p className="text-[10px] text-blue-700 font-bold uppercase mt-1">Matches Played</p>
               </div>
-              <div className="bg-green-50 rounded-xl p-6 text-center border border-green-100 shadow-sm">
-                <p className="text-green-900 font-black text-3xl">{user.stats?.wins || 0}</p>
-                <p className="text-[10px] text-green-700 font-bold uppercase mt-2">Matches Won</p>
+              <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+                <p className="text-green-900 font-black text-2xl">{user.stats?.wins || 0}</p>
+                <p className="text-[10px] text-green-700 font-bold uppercase mt-1">Matches Won</p>
               </div>
-              <div className="bg-red-50 rounded-xl p-6 text-center border border-red-100 shadow-sm">
-                <p className="text-red-900 font-black text-3xl">{user.stats?.kills || 0}</p>
-                <p className="text-[10px] text-red-700 font-bold uppercase mt-2">Total Kills</p>
+              <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
+                <p className="text-red-900 font-black text-2xl">{user.stats?.kills || 0}</p>
+                <p className="text-[10px] text-red-700 font-bold uppercase mt-1">Total Kills</p>
               </div>
-              <div className="bg-yellow-50 rounded-xl p-6 text-center border border-yellow-100 shadow-sm">
-                <p className="text-yellow-900 font-black text-3xl">₹{user.stats?.earned || 0}</p>
-                <p className="text-[10px] text-yellow-700 font-bold uppercase mt-2">Total Earnings</p>
+              <div className="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100">
+                <p className="text-yellow-900 font-black text-2xl">₹{user.stats?.earned || 0}</p>
+                <p className="text-[10px] text-yellow-700 font-bold uppercase mt-1">Total Earnings</p>
               </div>
             </div>
+            <button onClick={() => setShowStatsModal(false)} className="w-full mt-6 py-3 font-bold text-gray-500 bg-gray-100 rounded-xl">Close</button>
           </div>
         </div>
       )}
 
       {/* Legal Modals */}
       {legalModal && (
-        <div className="fixed inset-0 bg-[#f0f2f5] z-50 overflow-y-auto pb-24">
-          <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-            <button onClick={() => setLegalModal(null)} className="text-textPrimary">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <h2 className="text-textPrimary font-bold text-base flex-1 text-center">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-bgSurface rounded-2xl w-full max-w-md p-6 relative max-h-[80vh] flex flex-col">
+            <h3 className="font-black text-[#042e5a] text-lg mb-4 uppercase">
               {legalModal === 'terms' ? 'Terms & Conditions' : legalModal === 'privacy' ? 'Privacy Policy' : 'About Us'}
-            </h2>
-            <div className="w-6" />
-          </div>
-          <div className="p-4 mt-2">
-            <div className="bg-bgSurface rounded-2xl p-6 shadow-sm border border-borderColor text-sm text-gray-700 leading-relaxed min-h-[50vh]">
+            </h3>
+            <div className="overflow-y-auto text-sm text-gray-700 pr-2 flex-1">
               {legalModal === 'terms' && (
                 <p>Welcome to our App! By using this service, you agree to abide by our terms. All tournament entry fees are final. Prize pools are distributed automatically to your winning wallet. You are responsible for ensuring your Free Fire ID is entered correctly...</p>
               )}
@@ -2189,6 +2126,7 @@ export default function Home() {
                 <p>We are the ultimate Esports Tournament platform for Free Fire players! Join daily custom rooms, clash squads, and lone wolf matches to win real cash prizes based on your skills and kills.</p>
               )}
             </div>
+            <button onClick={() => setLegalModal(null)} className="w-full mt-6 py-3 font-bold text-white bg-[#042e5a] rounded-xl">Close</button>
           </div>
         </div>
       )}
@@ -2217,15 +2155,15 @@ export default function Home() {
       <AnimatePresence>
         {showCreateMatch && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
-            <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-              <button onClick={() => setShowCreateMatch(false)} className="text-textPrimary">
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Create New Match</h2>
-              <div className="w-6" />
-            </div>
-            <div className="p-4 mt-2">
+            className="fixed inset-0 bg-black/80 z-50 flex items-end">
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              className="w-full bg-bgSurface rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-bold text-lg text-[#132040]">Create New Match</h3>
+                <button onClick={() => setShowCreateMatch(false)} className="text-textSecondary">
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
               <form onSubmit={handleCreateMatch} className="space-y-4">
                 <input className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" placeholder="Match Title" value={newMatch.title} onChange={e => setNewMatch({...newMatch, title: e.target.value})} required />
                 <select className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm" value={newMatch.category} onChange={e => setNewMatch({...newMatch, category: e.target.value})}>
@@ -2265,11 +2203,11 @@ export default function Home() {
                   <label className="text-xs text-textSecondary mb-1 block">Rules (one per line)</label>
                   <textarea rows={4} className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm resize-none" value={newMatch.rules} onChange={e => setNewMatch({...newMatch, rules: e.target.value})} />
                 </div>
-                <button type="submit" className="w-full bg-[#f5c518] text-[#132040] font-black py-4 rounded-xl text-sm tracking-widest shadow-lg mt-6">
+                <button type="submit" className="w-full bg-bgSurface text-[#f5c518] font-bold py-4 rounded-xl text-sm tracking-widest">
                   CREATE MATCH
                 </button>
               </form>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -3172,27 +3110,26 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
 
       {/* Schedule Form Modal */}
           {showScheduleForm && (
-            <div className="fixed inset-0 bg-[#f0f2f5] z-50 overflow-y-auto pb-24">
-              <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-                <button onClick={() => setShowScheduleForm(false)} className="text-textPrimary">
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <h2 className="text-textPrimary font-bold text-base flex-1 text-center">
-                  {editingSchedule ? 'Edit Schedule Slot' : 'Add Daily Schedule Slot'}
-                </h2>
-                <div className="w-6" />
-              </div>
-              <div className="p-4 mt-2">
-                <form onSubmit={handleSaveSchedule} className="space-y-4">
+            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+              <div className="bg-bgSurface rounded-2xl p-5 w-full max-w-sm max-h-[85vh] overflow-y-auto space-y-4">
+                <div className="flex justify-between items-center border-b pb-3">
+                  <h3 className="font-bold text-sm text-[#132040]">
+                    {editingSchedule ? 'Edit Schedule Slot' : 'Add Daily Schedule Slot'}
+                  </h3>
+                  <button onClick={() => setShowScheduleForm(false)} className="text-textSecondary font-bold">✕</button>
+                </div>
+
+                <form onSubmit={handleSaveSchedule} className="space-y-3">
                   <div>
                     <label className="text-[10px] text-textSecondary font-bold block mb-1">Time Slot (e.g. 06:00 AM, 10:30 PM)</label>
                     <input type="text" value={schedTime} onChange={e => setSchedTime(e.target.value)}
-                      className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                   </div>
+
                   <div>
                     <label className="text-[10px] text-textSecondary font-bold block mb-1">Category</label>
                     <select value={schedCategory} onChange={e => setSchedCategory(e.target.value)}
-                      className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]">
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]">
                       {GAME_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </div>
@@ -3200,50 +3137,50 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                   <div>
                     <label className="text-[10px] text-textSecondary font-bold block mb-1">Match Title</label>
                     <input type="text" value={schedTitle} onChange={e => setSchedTitle(e.target.value)}
-                      className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Entry Fee (₹)</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Entry Fee (🪙)</label>
                       <input type="number" value={schedEntryFee} onChange={e => setSchedEntryFee(e.target.value)}
-                        className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                     </div>
                     <div>
-                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Prize Pool (₹)</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Prize Pool (🪙)</label>
                       <input type="number" value={schedPrizePool} onChange={e => setSchedPrizePool(e.target.value)}
-                        className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Per Kill (₹)</label>
+                      <label className="text-[10px] text-textSecondary font-bold block mb-1">Per Kill (🪙)</label>
                       <input type="number" value={schedPerKill} onChange={e => setSchedPerKill(e.target.value)}
-                        className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" />
                     </div>
                     <div>
                       <label className="text-[10px] text-textSecondary font-bold block mb-1">Total Slots</label>
                       <input type="number" value={schedTotalSlots} onChange={e => setSchedTotalSlots(e.target.value)}
-                        className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
+                        className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" required />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-[10px] text-textSecondary font-bold block mb-1">Rules (one per line)</label>
                     <textarea rows={3} value={schedRules} onChange={e => setSchedRules(e.target.value)}
-                      className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518] resize-none" placeholder="No emulator allowed..." />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518] resize-none" placeholder="No emulator allowed..." />
                   </div>
 
                   <div>
                     <label className="text-[10px] text-textSecondary font-bold block mb-1">Announcement Notice (Optional)</label>
                     <input type="text" value={schedNotice} onChange={e => setSchedNotice(e.target.value)}
                       placeholder="e.g. Delayed by 10 mins or Map changes"
-                      className="w-full border border-borderColor rounded-xl px-4 py-3 text-sm text-textPrimary focus:outline-none focus:border-[#f5c518]" />
+                      className="w-full border border-borderColor rounded-xl px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-[#f5c518]" />
                   </div>
 
                   <button type="submit"
-                    className="w-full bg-[#042e5a] text-white font-black py-4 rounded-xl text-sm tracking-widest shadow-lg mt-6">
+                    className="w-full bg-bgSurface text-[#f5c518] font-bold py-3 rounded-xl text-xs tracking-wider">
                     {editingSchedule ? 'UPDATE SCHEDULE' : 'SAVE SCHEDULE'}
                   </button>
                 </form>
@@ -3419,42 +3356,41 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
       )}
 
       {viewingPlayersMatch && (
-        <div className="fixed inset-0 bg-[#f0f2f5] z-50 overflow-y-auto pb-24">
-          <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
-            <button onClick={() => setViewingPlayersMatch(null)} className="text-textPrimary">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Joined Players</h2>
-            <div className="w-6" />
-          </div>
-          <div className="p-4 mt-2 space-y-3">
-            {viewingPlayersMatch.joinedPlayers?.length === 0 ? (
-              <p className="text-sm text-textSecondary text-center py-4 bg-bgSurface rounded-xl">No players joined yet.</p>
-            ) : (
-              viewingPlayersMatch.joinedPlayers?.map((p: any, idx: number) => (
-                <div key={idx} className="bg-bgSurface p-4 rounded-xl border border-borderColor shadow-sm flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-[#132040]">{p.inGameName}</p>
-                    <p className="text-xs text-textSecondary font-mono mt-0.5">UID: {p.inGameUid}</p>
-                  </div>
-                  {viewingPlayersMatch.teamType?.toLowerCase() === 'duo' && (
-                     <div className="text-right">
-                       <p className="text-[10px] text-textSecondary uppercase font-bold">Mate Name</p>
-                       <p className="text-xs font-semibold text-textPrimary">{p.teammateName || '-'}</p>
-                     </div>
-                  )}
-                  {viewingPlayersMatch.teamType?.toLowerCase() === 'squad' && (
-                     <div className="text-right">
-                       <p className="text-[10px] text-textSecondary uppercase font-bold">Squad Info</p>
-                       <p className="text-xs font-semibold text-textPrimary">{p.squadDetails || '-'}</p>
-                     </div>
-                  )}
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-bgSurface rounded-2xl p-5 w-full max-w-sm max-h-[80vh] overflow-y-auto space-y-4">
+            <div className="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 className="font-bold text-sm text-[#132040]">Joined Players</h3>
+                <p className="text-[10px] text-textSecondary">{viewingPlayersMatch.title} – {viewingPlayersMatch.matchId}</p>
+              </div>
+              <button onClick={() => setViewingPlayersMatch(null)} className="text-textSecondary font-bold">✕</button>
+            </div>
+
+            <div className="space-y-2">
+              {!viewingPlayersMatch.joinedPlayers || viewingPlayersMatch.joinedPlayers.length === 0 ? (
+                <p className="text-xs text-textSecondary text-center py-6">No players have joined this match yet.</p>
+              ) : (
+                <div className="divide-y divide-gray-100 max-h-[50vh] overflow-y-auto pr-1">
+                  {viewingPlayersMatch.joinedPlayers.map((p: any, idx: number) => (
+                    <div key={idx} className="py-2.5 flex justify-between items-center text-xs">
+                      <div>
+                        <p className="font-bold text-textPrimary">{p.name || p.user?.username || 'Player'}</p>
+                        <p className="text-[10px] text-textSecondary font-mono">UID: {p.uid || p.user?.ffUid || '--'}</p>
+                      </div>
+                      <div className="text-right text-[10px] text-textSecondary">
+                        <p>Team: {p.teamNo || idx + 1}</p>
+                        <p>Pos: {p.position || 'A'}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))
-            )}
+              )}
+            </div>
+            
+            <button onClick={() => setViewingPlayersMatch(null)}
+              className="w-full py-3 bg-bgSurface text-textPrimary font-bold rounded-xl text-xs">
+              Close
+            </button>
           </div>
         </div>
       )}

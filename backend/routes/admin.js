@@ -129,6 +129,31 @@ router.post('/users/:id/role', auth, verifyAdmin, async (req, res) => {
     }
 });
 
+// @route   PUT api/admin/users/:id/password
+// @desc    Change a user's password
+// @access  Private (Admin only)
+router.put('/users/:id/password', auth, verifyAdmin, async (req, res) => {
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ msg: 'Please provide a new password' });
+    }
+
+    try {
+        const userObj = await User.findById(req.params.id);
+        if (!userObj) return res.status(404).json({ msg: 'User not found' });
+        
+        const salt = await bcrypt.genSalt(10);
+        userObj.password = await bcrypt.hash(newPassword, salt);
+        await userObj.save();
+
+        res.json({ success: true, msg: 'Password updated successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 // @route   POST api/admin/hosts/create
 // @desc    Create a Host account
 // @access  Private (Admin only)

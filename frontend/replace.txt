@@ -1,0 +1,50 @@
+            {successWithdrawal && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-bgSurface z-50 overflow-y-auto pb-24">
+                <div className="bg-[#042e5a] px-4 py-4 flex items-center gap-3 rounded-b-2xl shadow-md z-10 relative">
+                  <button onClick={() => setSuccessWithdrawal(null)} className="text-textPrimary">
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <h2 className="text-textPrimary font-bold text-base flex-1 text-center">Request Submitted</h2>
+                  <div className="w-6" />
+                </div>
+
+                <div className="p-4 mt-6 max-w-sm mx-auto text-center space-y-6">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
+                    <CheckCircle className="w-10 h-10" />
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-black text-xl text-[#132040]">Request Submitted!</h3>
+                    <p className="text-textSecondary text-sm mt-2">Your withdrawal request has been registered.</p>
+                  </div>
+
+                  <div className="bg-bgPrimary rounded-xl p-5 border border-borderColor space-y-4 text-left shadow-sm">
+                    <div>
+                      <p className="text-textSecondary text-xs uppercase font-bold tracking-wider">Request ID</p>
+                      <p className="text-textPrimary font-mono font-black text-base tracking-wider select-all mt-1">{successWithdrawal.txId}</p>
+                    </div>
+                    <div className="h-px bg-borderColor w-full my-2"></div>
+                    <div>
+                      <p className="text-textSecondary text-xs uppercase font-bold tracking-wider">Amount</p>
+                      <p className="text-green-600 font-black text-2xl mt-1">₹{successWithdrawal.amount}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-yellow-700 font-bold bg-yellow-50 rounded-xl p-4 border border-yellow-100 text-left leading-relaxed">
+                    ⚠️ <b>Important Notice:</b> Copy your Request ID and send it to Customer Care on WhatsApp to get instant verification and approval!
+                  </div>
+
+                  <div className="pt-4">
+                    <button onClick={() => {
+                      navigator.clipboard.writeText(successWithdrawal.txId);
+                      const textMsg = encodeURIComponent(`Hello Admin, I have submitted a withdrawal request of ₹${successWithdrawal.amount}. My Request ID is: ${successWithdrawal.txId}. Please approve it.`);
+                      window.open(`https://api.whatsapp.com/send?phone=917017022966&text=${textMsg}`, '_blank');
+                    }}
+                      className="w-full bg-[#25D366] text-white font-black py-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-[#128C7E] active:scale-95 transition tracking-widest">
+                      SEND ID TO WHATSAPP
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}

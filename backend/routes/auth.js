@@ -9,7 +9,7 @@ const User = require('../models/User');
 // @desc    Register a player
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { username, phone, password, referCode } = req.body;
+    const { username, phone, password, referCode, email, firstName, lastName } = req.body;
 
     if (!username || !phone || !password) {
         return res.status(400).json({ msg: 'Please enter all fields' });
@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ msg: 'User with this phone or username already exists' });
         }
 
-        user = new User({ username, phone, password });
+        user = new User({ username, phone, password, email, firstName, lastName });
 
         // Default Sign-up Welcome Bonus: 10 coins
         user.coins = 10;
@@ -165,24 +165,55 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // @route   PUT api/auth/profile
-// @desc    Update Free Fire profile details
+// @desc    Update user profile details
 // @access  Private
 router.put('/profile', auth, async (req, res) => {
-    const { ffName, ffUid } = req.body;
+    const { ffName, ffUid, username, phone } = req.body;
 
-    if (!ffName || !ffUid) {
-        return res.status(400).json({ msg: 'IGN and Character UID are required' });
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        if (ffName) user.ffName = ffName;
+        if (ffUid) user.ffUid = ffUid;
+        if (username) user.username = username;
+        if (phone) user.phone = phone;
+
+        await user.save();
+        res.json(user);
+    } catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ msg: 'Username or phone number already in use by another account' });
+        }
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   PUT api/auth/password
+// @desc    Change user password
+// @access  Private
+router.put('/password', auth, async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ msg: 'Please provide old and new password' });
     }
 
     try {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
-        user.ffName = ffName;
-        user.ffUid = ffUid;
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Incorrect old password' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
 
-        res.json(user);
+        res.json({ msg: 'Password updated successfully' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

@@ -2459,6 +2459,26 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
     setTimeout(() => setMsg(''), 3000);
   };
 
+  const handleAddCoins = async (targetUser) => {
+    const amtStr = prompt(`Enter number of coins to add for ${targetUser.username}:`);
+    if (!amtStr) return;
+    const amt = parseInt(amtStr);
+    if (isNaN(amt) || amt <= 0) return alert('Invalid amount');
+    try {
+      const res = await fetch(`${API_URL}/admin/users/${targetUser._id}/add-coins`, {
+        method: 'POST', headers: getHeaders(),
+        body: JSON.stringify({ amount: amt })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMsg(data.msg || 'Coins added!');
+      } else {
+        setMsg(data.msg || 'Failed to add coins');
+      }
+    } catch { setMsg('Action failed'); }
+    setTimeout(() => setMsg(''), 3000);
+  };
+
   const handleBanUser = async (targetUser) => {
     if (!confirm(`Are you sure you want to ${targetUser.isBanned ? 'unban' : 'ban'} ${targetUser.username}?`)) return;
     try {
@@ -3292,6 +3312,10 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                     </button>
                     {(user.role === 'admin' || user.role === 'finance_admin') && (
                       <div className="flex gap-2 mt-2 flex-wrap">
+                        <button onClick={() => handleAddCoins(u)}
+                          className="px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                          Add Coins
+                        </button>
                         <button onClick={() => handleChangeUserPassword(u)}
                           className="px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 bg-blue-100 text-blue-700 hover:bg-blue-200">
                           Change Pass

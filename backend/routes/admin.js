@@ -154,6 +154,29 @@ router.put('/users/:id/password', auth, verifyAdmin, async (req, res) => {
     }
 });
 
+// @route   POST api/admin/users/:id/add-coins
+// @desc    Add coins to a user/host
+// @access  Private (Admin only)
+router.post('/users/:id/add-coins', auth, verifyAdmin, async (req, res) => {
+    const { amount } = req.body;
+    if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ msg: 'Please provide a valid positive amount' });
+    }
+
+    try {
+        const userObj = await User.findById(req.params.id);
+        if (!userObj) return res.status(404).json({ msg: 'User not found' });
+        
+        userObj.coins = (userObj.coins || 0) + Number(amount);
+        await userObj.save();
+
+        res.json({ success: true, msg: `${amount} coins added successfully to ${userObj.username}`, coins: userObj.coins });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 // @route   POST api/admin/hosts/create
 // @desc    Create a Host account
 // @access  Private (Admin only)

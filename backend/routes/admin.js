@@ -10,14 +10,7 @@ const { sendTelegramAlert } = require('../utils/telegram');
 const multer = require('multer');
 const path = require('path');
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'public/uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const webpush = require('web-push');
 
@@ -731,7 +724,7 @@ router.post('/settings/announcement', auth, async (req, res) => {
 });
 
 // @route   POST api/admin/upload-image
-// @desc    Upload an image (banner) and get URL
+// @desc    Upload an image (banner) and get URL (base64)
 // @access  Private (Admin & Finance Admin)
 router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
     try {
@@ -742,8 +735,8 @@ router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ msg: 'No file uploaded' });
         }
-        const imageUrl = `/uploads/${req.file.filename}`;
-        res.json({ success: true, url: imageUrl });
+        const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        res.json({ success: true, url: base64Image });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

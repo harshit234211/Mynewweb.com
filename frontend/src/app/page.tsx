@@ -1611,8 +1611,8 @@ export default function Home() {
               <div className="flex overflow-x-auto gap-3 snap-x snap-mandatory hide-scrollbar rounded-2xl">
                 {promoBanners.map((banner, i) => (
                   <a key={i} href={banner.link || '#'} target={banner.link ? "_blank" : "_self"} rel="noopener noreferrer" 
-                     className="shrink-0 w-full sm:w-[85%] snap-center rounded-2xl overflow-hidden shadow-md border border-borderColor">
-                    <img src={banner.image} alt="Promo Banner" className="w-full h-[180px] sm:h-[220px] object-contain bg-black" />
+                     className="shrink-0 w-full sm:w-[85%] snap-center rounded-2xl overflow-hidden shadow-md border border-borderColor block aspect-[2/1]">
+                    <img src={banner.image} alt="Promo Banner" className="w-full h-full object-cover bg-black" />
                   </a>
                 ))}
               </div>
@@ -2886,7 +2886,7 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
                         setAdminPromoBanners(newBanners);
                       })}
                       className="flex-1 border border-borderColor rounded-lg px-2 py-1.5 text-xs bg-bgSurface text-textPrimary" />
-                    {banner.image && <img src={banner.image} alt="preview" className="w-12 h-10 object-cover rounded shadow-sm" />}
+                    {banner.image && <img src={banner.image} alt="preview" className="w-20 aspect-[2/1] object-cover rounded shadow-sm" />}
                   </div>
                 </div>
                 <input type="text" placeholder="Redirect Link (e.g., YouTube/WhatsApp URL)" value={banner.link || ''}

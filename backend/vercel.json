@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "MONGO_URI": "mongodb+srv://shakyaharshit683_db_user:Test123456@cluster0.ieq46cq.mongodb.net/fragarena?retryWrites=true&w=majority&appName=Cluster0"
+  }
+}

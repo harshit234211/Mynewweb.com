@@ -206,10 +206,19 @@ async function tickStatuses() {
         
         for (const t of upcomingTournaments) {
             const startTime = parseTimeToDate(t.date, t.time);
-            if (now >= startTime) {
-                t.status = 'ongoing';
-                await t.save();
-                console.log(`[Scheduler] Match ${t.matchId} (${t.title}) is now LIVE (ongoing)`);
+            const limitTime = new Date(startTime.getTime() + 10 * 60000); // 10 minutes after start time
+            
+            if (now >= limitTime) {
+                if (!t.joinedPlayers || t.joinedPlayers.length === 0) {
+                    // 10 minutes passed and no users joined, auto-remove
+                    await Tournament.findByIdAndDelete(t._id);
+                    console.log(`[Scheduler] Match ${t.matchId} (${t.title}) automatically removed (0 players after 10 mins)`);
+                } else {
+                    // 10 minutes passed and users are joined, host didn't start it, so auto start it
+                    t.status = 'ongoing';
+                    await t.save();
+                    console.log(`[Scheduler] Match ${t.matchId} (${t.title}) auto-started to LIVE (ongoing) after 10 min delay`);
+                }
             }
         }
 

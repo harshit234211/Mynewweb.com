@@ -53,8 +53,8 @@ router.get('/matches', auth, verifyHostOrFinanceAdmin, async (req, res) => {
 router.post('/match/:id/room', auth, verifyHostOrFinanceAdmin, async (req, res) => {
     const { roomId, roomPass } = req.body;
 
-    if (!roomId || !roomPass) {
-        return res.status(400).json({ msg: 'Room ID and Password are required' });
+    if (!roomId) {
+        return res.status(400).json({ msg: 'Room ID is required' });
     }
 
     try {
@@ -63,6 +63,12 @@ router.post('/match/:id/room', auth, verifyHostOrFinanceAdmin, async (req, res) 
 
         match.roomId = roomId;
         match.roomPass = roomPass;
+        
+        // Host puts it in ongoing when they publish the room credentials
+        if (match.status === 'upcoming') {
+            match.status = 'ongoing';
+        }
+        
         await match.save();
 
         res.json({ success: true, msg: 'Room credentials published successfully', match });

@@ -14,7 +14,8 @@ app.use(cors());
 
 // Pre-flight options handler
 app.options('*', cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static uploads directory
 const path = require('path');

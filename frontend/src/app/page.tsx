@@ -1644,10 +1644,11 @@ export default function Home() {
                         </div>
                       );
                     })()}
-                    {/* Player count */}
-                    <div className="absolute bottom-2 left-3 flex items-center gap-1">
-                      <div className="w-2 h-2 bg-green-400 rounded-full" />
-                      <span className="text-green-400 text-[10px] font-bold">{count} Matches</span>
+                    {/* Player count & Category Name */}
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/70 px-2 py-1 rounded-md border border-white/10 backdrop-blur-sm shadow-md">
+                      <div className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_4px_rgba(74,222,128,0.8)] animate-pulse" />
+                      <span className="text-green-400 text-[10px] font-black">{count}</span>
+                      <span className="text-white text-[10px] font-bold">{cat.label}</span>
                     </div>
                     {/* FF MAX badge */}
                     <div className="absolute top-2 right-2 bg-black/40 rounded px-1 py-0.5">

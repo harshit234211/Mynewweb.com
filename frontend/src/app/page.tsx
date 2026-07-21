@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = 'https://backend-jet-delta-82.vercel.app/api';
 
 // Game categories with colors
 const GAME_CATEGORIES = [

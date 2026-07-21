@@ -83,15 +83,15 @@ router.get('/stats', auth, verifyAdmin, async (req, res) => {
 // @access  Public (Temporary for migration)
 router.post('/import-data', async (req, res) => {
     try {
-        const { users, transactions, schedules, templates, tournaments, appinfos, clans, settings } = req.body;
+        const { users, transactions, schedules, templates, tournaments, appinfos, clans, settings, clear } = req.body;
         
-        if (users && users.length) { await User.deleteMany({}); await User.insertMany(users); }
-        if (transactions && transactions.length) { await Transaction.deleteMany({}); await Transaction.insertMany(transactions); }
-        if (schedules && schedules.length) { const Schedule = require('../models/Schedule'); await Schedule.deleteMany({}); await Schedule.insertMany(schedules); }
-        if (tournaments && tournaments.length) { await Tournament.deleteMany({}); await Tournament.insertMany(tournaments); }
-        if (appinfos && appinfos.length) { const AppInfo = mongoose.connection.collection('appinfos'); await AppInfo.deleteMany({}); await AppInfo.insertMany(appinfos); }
+        if (users && users.length) { if (clear) await User.deleteMany({}); await User.insertMany(users); }
+        if (transactions && transactions.length) { if (clear) await Transaction.deleteMany({}); await Transaction.insertMany(transactions); }
+        if (schedules && schedules.length) { const Schedule = require('../models/Schedule'); if (clear) await Schedule.deleteMany({}); await Schedule.insertMany(schedules); }
+        if (tournaments && tournaments.length) { if (clear) await Tournament.deleteMany({}); await Tournament.insertMany(tournaments); }
+        if (appinfos && appinfos.length) { const AppInfo = mongoose.connection.collection('appinfos'); if (clear) await AppInfo.deleteMany({}); await AppInfo.insertMany(appinfos); }
         
-        res.json({ success: true, msg: 'Data imported successfully over HTTP!' });
+        res.json({ success: true, msg: 'Data chunk imported successfully over HTTP!' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

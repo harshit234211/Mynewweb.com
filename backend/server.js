@@ -9,34 +9,8 @@ const { initScheduler } = require('./utils/scheduler');
 
 const app = express();
 
-// CORS Whitelist Configuration
-const allowedOrigins = [
-    'https://frontend-sigma-rose-73.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173'
-];
-
-app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl, postman)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        } else {
-            return callback(new Error('Not allowed by CORS'), false);
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Content-Type', 
-        'Authorization', 
-        'x-auth-token', 
-        'cache-control', 
-        'pragma', 
-        'expires'
-    ],
-    credentials: true
-}));
+// Simplified CORS Configuration for Vercel
+app.use(cors());
 
 // Pre-flight options handler
 app.options('*', cors());
@@ -156,15 +130,10 @@ app.get('/api/debug-users', async (req, res) => {
     }
 });
 
-// Global Error Handler to guarantee CORS headers on crashes
+// Global Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-    }
-    res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    res.status(500).json({ msg: 'Something broke!', error: err.message });
 });
 
 const PORT = process.env.PORT || 5000;

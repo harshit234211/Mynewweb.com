@@ -95,46 +95,16 @@ function getTimeLeft(date: string, time: string) {
 }
 
 const getCategoryThumbnail = (category, categoryBanners = {}) => {
-  const cat = category?.toLowerCase() || '';
-  
   // 1. Check if admin uploaded a custom dynamic banner for this category
   if (categoryBanners && category && categoryBanners[category]) {
     return categoryBanners[category];
   }
-
-  // 2. Fallbacks
-  if (cat.includes('headshot')) {
-    return '/cs_headshot.png';
-  }
-  if (cat.includes('clash squad 4v4') || cat.includes('cs 4v4')) {
-    return '/clash_squad_4v4.png';
-  }
-  if (cat.includes('per kill') || cat.includes('kill')) {
-    return '/br_per_kill.png';
-  }
-  if (cat.includes('survival') || cat.includes('royale') || (cat.includes('squad') && !cat.includes('clash'))) {
-    return '/br_survival.png';
-  }
-  if (cat.includes('clash') || cat.includes('cs')) {
-    return '/clash_squad.png';
-  }
-  if (cat.includes('lone') || cat.includes('wolf')) {
-    return '/lone_wolf.png';
-  }
-  return '/br_survival.png'; // default fallback
+  
+  // No fallback image files exist, return null to show gradient UI
+  return null;
 };
 
 const getSpecialBanner = (category) => {
-  const cat = category?.toLowerCase() || '';
-  if (cat.includes('1v1') || cat.includes('custom')) {
-    return '/banners/1v1.jpeg';
-  }
-  if (cat.includes('2v2')) {
-    return '/banners/2v2.jpeg';
-  }
-  if (cat.includes('4v4')) {
-    return '/banners/4v4.jpeg';
-  }
   return null;
 };
 

@@ -1602,7 +1602,7 @@ export default function Home() {
                     {(() => {
                       const catImage = getCategoryThumbnail(cat.id, categoryBanners);
                       return catImage ? (
-                        <img src={catImage} alt={cat.label} className="w-full h-auto block" />
+                        <img src={catImage} alt={cat.label} className="w-full aspect-[5/4] object-cover block" />
                       ) : (
                         <div className={`w-full h-32 relative bg-gradient-to-br ${cat.bg}`}>
                           <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
@@ -2615,6 +2615,25 @@ function HostPanel({ user, token, getHeaders, tournaments, setTournaments, setSh
       setLoadingStats(false);
     }
   }, [API_URL, getHeaders, user.role]);
+
+  const handleGenerateMatches = async () => {
+    try {
+      const res = await fetch(`${API_URL}/admin/generate-schedules`, {
+        method: 'POST',
+        headers: getHeaders()
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMsg(data.msg);
+        fetchHostedMatches();
+      } else {
+        setMsg(data.msg || 'Generation failed');
+      }
+    } catch {
+      setMsg('Failed to trigger generation');
+    }
+    setTimeout(() => setMsg(''), 4000);
+  };
 
   const handleSaveSchedule = async (e) => {
     e.preventDefault();

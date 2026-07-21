@@ -535,6 +535,66 @@ router.get('/schedules', auth, verifyAdmin, async (req, res) => {
     }
 });
 
+// @route   POST api/admin/generate-schedules
+// @desc    Generate matches for the current day based on active schedules
+// @access  Private (Admin only)
+router.post('/generate-schedules', auth, verifyAdmin, async (req, res) => {
+    try {
+        const activeSchedules = await Schedule.find({ enabled: true });
+        if (activeSchedules.length === 0) {
+            return res.json({ success: true, count: 0, msg: 'No active schedules found.' });
+        }
+
+        const today = new Date();
+        // Format today as YYYY-MM-DD
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+
+        let generatedCount = 0;
+
+        for (const sched of activeSchedules) {
+            // Check if a match for this schedule already exists today
+            const existing = await Tournament.findOne({
+                title: sched.title,
+                date: dateStr,
+                time: sched.time
+            });
+
+            if (!existing) {
+                // Parse closing time: assume 15 minutes before start time
+                // To do this simply, we just set it to null and let the frontend/backend handle it
+                const newTourney = new Tournament({
+                    title: sched.title,
+                    category: sched.category,
+                    date: dateStr,
+                    time: sched.time,
+                    entryFee: sched.entryFee,
+                    prizePool: sched.prizePool,
+                    perKill: sched.perKill,
+                    totalSlots: sched.totalSlots,
+                    teamType: sched.teamType,
+                    mode: sched.mode,
+                    map: sched.map,
+                    matchType: sched.matchType,
+                    rules: sched.rules,
+                    prizeDistribution: sched.prizeDistribution,
+                    host: req.user.id,
+                    status: 'upcoming'
+                });
+                await newTourney.save();
+                generatedCount++;
+            }
+        }
+
+        res.json({ success: true, count: generatedCount, msg: `Generated ${generatedCount} new matches for today.` });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 // @route   POST api/admin/schedules
 // @desc    Create a new daily schedule template
 // @access  Private (Admin only)

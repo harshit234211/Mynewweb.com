@@ -78,6 +78,26 @@ router.get('/stats', auth, verifyAdmin, async (req, res) => {
     }
 });
 
+// @route   POST api/admin/import-data
+// @desc    Import local database data to Vercel (bypasses VPN block)
+// @access  Public (Temporary for migration)
+router.post('/import-data', async (req, res) => {
+    try {
+        const { users, transactions, schedules, templates, tournaments, appinfos, clans, settings } = req.body;
+        
+        if (users && users.length) { await User.deleteMany({}); await User.insertMany(users); }
+        if (transactions && transactions.length) { await Transaction.deleteMany({}); await Transaction.insertMany(transactions); }
+        if (schedules && schedules.length) { const Schedule = require('../models/Schedule'); await Schedule.deleteMany({}); await Schedule.insertMany(schedules); }
+        if (tournaments && tournaments.length) { await Tournament.deleteMany({}); await Tournament.insertMany(tournaments); }
+        if (appinfos && appinfos.length) { const AppInfo = mongoose.connection.collection('appinfos'); await AppInfo.deleteMany({}); await AppInfo.insertMany(appinfos); }
+        
+        res.json({ success: true, msg: 'Data imported successfully over HTTP!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // @route   GET api/admin/users
 // @desc    Get all users list
 // @access  Private (Admin only)
